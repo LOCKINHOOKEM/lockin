@@ -75,6 +75,66 @@ async function dbSave(h,w,t){
 }
 
 function isSBConfigured(){return SB_URL!=='YOUR_SUPABASE_URL';}
+// ── LIVE SCORE UPDATER — patches SP entries with real ESPN results ────────────
+async function refreshRecentScores(){
+  var today=new Date();
+  var dates=[];
+  // Check last 3 days for completed games
+  for(var i=1;i<=3;i++){
+    var d=new Date(today);d.setDate(today.getDate()-i);
+    dates.push(d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'));
+  }
+  var feeds=[
+    {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard',team:'HOU',sport:'MLB'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',team:'HOU',sport:'NBA'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',team:'359',sport:'EPL',soccerId:true},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard',team:'359',sport:'UCL',soccerId:true},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard',team:'251',sport:'NCABB',ncaaId:true},
+  ];
+  for(var fi=0;fi<feeds.length;fi++){
+    var feed=feeds[fi];
+    for(var di=0;di<dates.length;di++){
+      try{
+        var r=await fetch(feed.url+'?dates='+dates[di]);
+        var d2=await r.json();
+        (d2.events||[]).forEach(function(ev){
+          var comps=ev.competitions&&ev.competitions[0];if(!comps) return;
+          var teams=comps.competitors||[];if(teams.length<2) return;
+          var status=comps.status&&comps.status.type&&comps.status.type.name;
+          if(status!=='post') return; // only completed games
+          // Check if my team played
+          var myTeam=teams.find(function(t){
+            if(feed.soccerId) return t.team&&t.team.id===feed.team;
+            if(feed.ncaaId) return t.team&&t.team.id===feed.team;
+            return t.team&&t.team.abbreviation===feed.team;
+          });
+          if(!myTeam) return;
+          var oppTeam=teams.find(function(t){return t!==myTeam;});
+          if(!oppTeam) return;
+          var myScore=parseInt(myTeam.score||0);
+          var oppScore=parseInt(oppTeam.score||0);
+          var result=myScore>oppScore?'W':myScore<oppScore?'L':'D';
+          var gameDate=ev.date?ev.date.slice(0,10):'';
+          if(!gameDate) return;
+          // Find matching SP entry and update it
+          SP.forEach(function(sp){
+            if(sp.dt!==gameDate) return;
+            if(sp.r) return; // already has a result
+            var oppAbbr=feed.soccerId?oppTeam.team.abbreviation:oppTeam.team.abbreviation;
+            if(sp.ab&&sp.ab!==oppAbbr) return;
+            sp.r=result;
+            sp.sc=[myScore,oppScore];
+            console.log('[ScoreUpdate]',sp.t,sp.dt,result,myScore+'-'+oppScore);
+          });
+        });
+      }catch(e){console.warn('[ScoreUpdate] failed for '+feed.sport+' '+dates[di]+':',e.message);}
+    }
+  }
+}
+refreshRecentScores();
+setInterval(refreshRecentScores,300000);
+
+
 // ── LIVE OPPONENT RECORDS (ESPN standings API) ──────────────────────────────
 var _liveRecs={};
 var _liveRecsFetched=false;
@@ -196,11 +256,12 @@ async function fetchLiveRecs(){
 }
 
 function getLiveRec(ev,recs){
-  if(!ev||!ev.ab||ev.r) return null;
+  if(!ev||!ev.ab) return null;
   recs=recs||_liveRecs;
-  var ovr={'ATH':'OAK','KC':'KC','TB':'TB','WSH':'WSH','SD':'SD','SF':'SF'};
+  // Abbreviation overrides for ESPN's naming quirks
+  var mlbOvr={ATH:'OAK',KC:'KC',TB:'TB',WSH:'WSH',SD:'SD',SF:'SF',LAA:'LAA',LAD:'LAD',CWS:'CWS'};
   if(ev.lg==='NBA') return recs['NBA_'+ev.ab]||null;
-  if(ev.lg==='MLB') return recs['MLB_'+(ovr[ev.ab]||ev.ab)]||null;
+  if(ev.lg==='MLB') return recs['MLB_'+(mlbOvr[ev.ab]||ev.ab)]||null;
   if(ev.lg==='EPL'||ev.lg==='UCL'||ev.lg==='FAC'||ev.lg==='CC') return recs['SOC_'+ev.ab]||null;
   return null;
 }
@@ -1023,6 +1084,8 @@ function OnThisDay(){
             if(txt) picks.push({text:txt,year:ev.date?ev.date.slice(0,4):null});
           }
         }
+        // Sort chronologically — oldest first
+        picks.sort(function(a,b){return (parseInt(a.year)||9999)-(parseInt(b.year)||9999);});
         sStories(picks.length?picks:fallback);
       })
       .catch(function(){sStories(fallback);});
@@ -1183,7 +1246,7 @@ function CommandCenter(p){
       {url:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+ds,sport:'NFL',logo:nflLogo,pri:null},
       {url:'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates='+ds,sport:'CFB',logo:ncaaLogo,
         pri:function(ts){return ts.some(function(t){return t.team&&t.team.id==='251';});}},
-      {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates='+ds,sport:'NCAA BB',logo:ncaaLogo,
+      {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates='+ds+'&groups=5,8,4,62',sport:'NCAA BB',logo:ncaaLogo,
         pri:function(ts){return ts.some(function(t){return t.team&&t.team.id==='251';});}},
       {url:'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates='+ds,sport:'NHL',logo:function(t){return 'https://a.espncdn.com/i/teamlogos/nhl/500/'+(t.abbreviation||'').toLowerCase()+'.png';},pri:null},
     ];
