@@ -266,6 +266,40 @@ var HOL={
 };
 
 var TREC={Astros:'6-4',Rockets:'49-29','UT Baseball':'26-5','UT Football':'',Arsenal:'21-7-3'};
+// Auto-update MY team records from ESPN every 5 min
+async function refreshMyTeamRecords(){
+  var updates={};
+  try{
+    // Astros + Rockets (MLB/NBA standings)
+    var [nba,mlb,epl]=await Promise.all([
+      fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/hou').then(function(r){return r.json();}),
+      fetch('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/hou').then(function(r){return r.json();}),
+      fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams/359').then(function(r){return r.json();})
+    ]);
+    // NBA Houston
+    var nbaRec=nba.team&&nba.team.record&&nba.team.record.items&&nba.team.record.items[0]&&nba.team.record.items[0].summary;
+    if(nbaRec) updates.Rockets=nbaRec;
+    // MLB Houston
+    var mlbRec=mlb.team&&mlb.team.record&&mlb.team.record.items&&mlb.team.record.items[0]&&mlb.team.record.items[0].summary;
+    if(mlbRec) updates.Astros=mlbRec;
+    // Arsenal EPL record (W-D-L)
+    var eplStats=epl.team&&epl.team.record&&epl.team.record.items;
+    if(eplStats&&eplStats[0]) updates.Arsenal=eplStats[0].summary;
+  }catch(e){console.warn('My team records refresh error:',e.message);}
+  // Apply updates to TREC
+  Object.assign(TREC,updates);
+  // Also try UT Baseball from scoreboard results
+  try{
+    var cb=await fetch('https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/teams/251');
+    var cbd=await cb.json();
+    var cbRec=cbd.team&&cbd.team.record&&cbd.team.record.items&&cbd.team.record.items[0]&&cbd.team.record.items[0].summary;
+    if(cbRec) TREC['UT Baseball']=cbRec;
+  }catch(e){}
+  console.log('[TREC] Updated:',JSON.stringify(TREC));
+}
+// Run on load and every 5 minutes
+refreshMyTeamRecords();
+setInterval(refreshMyTeamRecords,300000);
 var TCOL={
   Astros:{bg:'rgba(0,45,98,0.92)',t1:'#a8c8f8',t2:'#7aacec'},
   Rockets:{bg:'rgba(206,17,65,0.88)',t1:'#ffccd8',t2:'#ffaabb'},
@@ -1018,7 +1052,7 @@ function CommandCenter(p){
 
   // ── Weather — wttr.in (no API key, CORS-friendly) ─────────────────────────
   uE(function(){
-    fetch('https://wttr.in/77008?format=j1')
+    fetch('https://wttr.in/Houston?format=j1')
       .then(function(r){
         if(!r.ok) throw new Error('HTTP '+r.status);
         return r.json();
@@ -1059,7 +1093,22 @@ function CommandCenter(p){
     // ── ESPN Headlines (MLB + NBA + EPL + NFL) ───────────────────────────────────
   uE(function(){
     var priority=['Astros','Rockets','Longhorns','Arsenal','Houston','Texas','Shams','Passan','Schefter','Thamel','Woj'];
-    var badWords=['fantasy','Fantasy','DraftKings','FanDuel','PrizePicks','BetMGM','Caesars','PointsBet','wager','parlay','prop bet','gambling','Gambling','picks for','best bets','over/under','moneyline','sportsbook','Sportsbook','odds on','betting line','betting odds','game odds','spread odds','point spread','pick em','Power Rankings','power rankings','Top 10','top 10','Top 25','Rankings:','Mock Draft','mock draft','NFL odds','NBA odds','MLB odds','futures odds','bet on','betting market','opening line','closing line','DFS','daily fantasy','season-long fantasy','fantasy football','fantasy baseball','fantasy basketball','projected','projections','sleeper','waiver wire','trade value'];
+    // Comprehensive gambling/betting/fantasy filter — if in doubt, filter it out
+    var badWords=[
+      // Gambling/betting terms
+      'odds','betting','bet on','bets','wager','parlay','prop','moneyline','spread',
+      'sportsbook','DraftKings','FanDuel','PrizePicks','BetMGM','Caesars','PointsBet',
+      'gambling','over/under','opening line','closing line','futures','picks for',
+      'best bets','pick em','betting market','betting line','game odds','point spread',
+      // Fantasy sports
+      'fantasy','DFS','daily fantasy','waiver wire','trade value','sleeper',
+      'season-long','projected','projections',
+      // Listicles/rankings we can't click anyway
+      'Power Rankings','power rankings','Top 10','top 10','Top 25','Rankings:',
+      'Mock Draft','mock draft','trade targets','must-start','must start',
+      // Scores/recaps that are just game highlights with no real news
+      'Game Highlights','Game Recap',
+    ];
     var allHeads=[];
     var feeds=[
       'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/news?limit=15',
@@ -1075,7 +1124,7 @@ function CommandCenter(p){
           }
         });
         var filtered=allHeads.filter(function(h){
-          return !badWords.some(function(bw){return h.toLowerCase().indexOf(bw.toLowerCase())>-1;});
+          var hl=h.toLowerCase();return !badWords.some(function(bw){return hl.indexOf(bw.toLowerCase())>-1;});
         });
         var sorted=filtered.sort(function(a,b){
           var ap=priority.some(function(k){return a.indexOf(k)>-1;})?1:0;
@@ -1826,6 +1875,7 @@ function App(){
   var [sync,sSync]=uS('idle');
   var [lastSync,sLastSync]=uS('');
   var [liveRecs,sLiveRecs]=uS({});
+  var [trecVer,sTrecVer]=uS(0); // bumped when TREC updates to force re-render
   var [notes,sNotes]=uS(function(){try{var n=sg('li_notes');return n||[];}catch(e){return [];}});
   var [newNote,sNewNote]=uS('');
   var [showNoteInput,sShowNoteInput]=uS(false);
@@ -1844,6 +1894,14 @@ function App(){
   function loadData(){
     sSync('syncing');
     fetchLiveRecs().then(function(recs){sLiveRecs(recs);});
+    refreshMyTeamRecords().then(function(){sTrecVer(function(v){return v+1;});});
+    // Re-fetch records every 5 min to keep calendar fresh
+    var recIv=setInterval(function(){
+      _liveRecsFetched=false; // bust cache so fetchLiveRecs re-fetches
+      fetchLiveRecs().then(function(recs){sLiveRecs(recs);});
+      refreshMyTeamRecords().then(function(){sTrecVer(function(v){return v+1;});});
+    },300000);
+    return function(){clearInterval(recIv);};
     dbLoad().then(function(res){
       sAll(res.h);sWkts(res.w);sTm(res.t);sRdy(true);
       if(res.src==='error'){sSync('error');}
@@ -2026,7 +2084,7 @@ function App(){
     ),
     cr('div',{style:{padding:'1.25rem 1.5rem 3rem'}},
       tab==='today'&&cr(TodayV,{all:all,upH:upH}),
-      tab==='calendar'&&cr(CalV,{all:all,evts:evts,addEvt:addEvt,dlEvt:dlEvt,liveRecs:liveRecs}),
+      tab==='calendar'&&cr(CalV,{all:all,evts:evts,addEvt:addEvt,dlEvt:dlEvt,liveRecs:liveRecs,trecVer:trecVer}),
       tab==='workout'&&cr(WktV,{wkts:wkts,addW:addW,edW:edW,dlW:dlW}),
       tab==='treadmill'&&cr(TmV,{tm:tm,addT:addT,dlT:dlT}),
       tab==='stats'&&cr(StatV,{all:all,wkts:wkts,tm:tm})
