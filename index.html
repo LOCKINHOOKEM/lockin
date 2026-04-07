@@ -1987,10 +1987,15 @@ function App(){
               var oppT=teams.find(function(t){return t!==myT;});if(!oppT) return;
               var myScore=parseInt(myT.score||0),oppScore=parseInt(oppT.score||0);
               var result=myScore>oppScore?'W':myScore<oppScore?'L':'D';
-              var gameDate=ev.date?ev.date.slice(0,10):'';if(!gameDate) return;
-              var oppAbbr=oppT.team&&oppT.team.abbreviation||'';
-              var key=gameDate+'_'+oppAbbr;
-              scoreMap[key]={r:result,sc:[myScore,oppScore]};
+              var utcDate=ev.date?ev.date.slice(0,10):'';if(!utcDate) return;
+              // Also compute CDT local date (UTC-5) to handle timezone mismatch
+              var cstMs=new Date(ev.date).getTime()-5*3600000;
+              var cstD=new Date(cstMs);
+              var localDate=cstD.getFullYear()+'-'+String(cstD.getMonth()+1).padStart(2,'0')+'-'+String(cstD.getDate()).padStart(2,'0');
+              var entry={r:result,sc:[myScore,oppScore]};
+              // Key by sport+date — no opponent abbr to avoid mismatches
+              scoreMap[f.lg+'_'+utcDate]=entry;
+              scoreMap[f.lg+'_'+localDate]=entry;
             });
           }).catch(function(){}));
         });
@@ -2413,9 +2418,18 @@ function CalV(p){
   var all=p.all,evts=p.evts||[],addEvt=p.addEvt,dlEvt=p.dlEvt,liveRecs=p.liveRecs||{},liveScores=p.liveScores||{},now=new Date();
   // Helper: get live score for an SP event (overrides hardcoded result if available)
   function getScore(ev){
-    if(ev.r) return ev; // already has result, use it
-    var key=ev.dt+'_'+ev.ab;
-    var ls=liveScores[key];
+    if(ev.r) return ev; // already has hardcoded result, use it
+    // Match by sport+date — try both the game date and day before/after for UTC offset
+    var lg=ev.lg;
+    var ls=liveScores[lg+'_'+ev.dt];
+    if(!ls){
+      // Try adjacent dates for timezone edge cases
+      var d=new Date(ev.dt+'T12:00:00');
+      var prev=new Date(d);prev.setDate(d.getDate()-1);
+      var next=new Date(d);next.setDate(d.getDate()+1);
+      var fmt=function(dd){return dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');};
+      ls=liveScores[lg+'_'+fmt(prev)]||liveScores[lg+'_'+fmt(next)];
+    }
     if(ls) return Object.assign({},ev,{r:ls.r,sc:ls.sc});
     return ev;
   }
