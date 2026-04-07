@@ -1043,9 +1043,9 @@ function OnThisDay(){
         {text:'Floyd Patterson becomes the first man to regain the heavyweight title',year:'1960'},
       ],
       '4-7':[
+        {text:'The first Masters Tournament tees off at Augusta National Golf Club',year:'1934'},
         {text:'Jackie Robinson breaks the MLB color barrier with the Brooklyn Dodgers',year:'1947'},
         {text:'Wilt Chamberlain scores 73 points in a single NBA game',year:'1962'},
-        {text:'The first Masters Tournament tees off at Augusta National',year:'1934'},
       ],
       '4-8':[
         {text:'Hank Aaron hits his 715th home run, passing Babe Ruth',year:'1974'},
@@ -1088,7 +1088,10 @@ function OnThisDay(){
         picks.sort(function(a,b){return (parseInt(a.year)||9999)-(parseInt(b.year)||9999);});
         sStories(picks.length?picks:fallback);
       })
-      .catch(function(){sStories(fallback);});
+      .catch(function(){
+        var sorted=fallback.slice().sort(function(a,b){return (parseInt(a.year)||9999)-(parseInt(b.year)||9999);});
+        sStories(sorted);
+      });
   },[]);
   if(!stories.length) return null;
   return cr('div',{style:{display:'flex',flexDirection:'column',gap:5}},
@@ -1113,43 +1116,38 @@ function CommandCenter(p){
   var SCROLLING=['AAPL','MSFT','AMZN','META','GOOGL','TSLA','JPM','BAC','GS','XOM','V','WMT','NFLX','AMD','CRM','CVX','PG'];
   var ALL_SYMS=PINNED.concat(SCROLLING);
 
-  // ── Weather — wttr.in (no API key, CORS-friendly) ─────────────────────────
+  // ── Weather — Open-Meteo primary (most reliable, no key, no CORS) ──────────
   uE(function(){
-    fetch('https://wttr.in/Houston?format=j1')
-      .then(function(r){
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        return r.json();
-      })
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=29.7604&longitude=-95.3698&current_weather=true&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=1')
+      .then(function(r){return r.json();})
       .then(function(d){
-        var cur=(d.current_condition||[{}])[0];
-        var wea=(d.weather||[{}])[0];
-        var temp=parseInt(cur.temp_F||0);
-        var hi=parseInt(wea.maxtempF||temp);
-        var lo=parseInt(wea.mintempF||temp);
-        var code=parseInt(cur.weatherCode||113);
-        var hours=wea.hourly||[];
-        var maxRain=hours.reduce(function(mx,h){return Math.max(mx,parseInt(h.chanceofrain||0));},0);
-        sWeather({temp:temp,hi:hi,lo:lo,precip:maxRain,code:code});
+        var cw=d.current_weather||{};
+        var dl=d.daily||{};
+        if(cw.temperature===undefined) throw new Error('no data');
+        sWeather({
+          temp:Math.round(cw.temperature),
+          hi:Math.round((dl.temperature_2m_max||[cw.temperature])[0]),
+          lo:Math.round((dl.temperature_2m_min||[cw.temperature])[0]),
+          precip:Math.round((dl.precipitation_probability_max||[0])[0]),
+          code:cw.weathercode||0
+        });
       })
       .catch(function(e){
-        console.warn('[Weather] wttr.in failed:',e.message,', trying Open-Meteo...');
-        fetch('https://api.open-meteo.com/v1/forecast?latitude=29.7752&longitude=-95.4144&current_weather=true&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=1')
+        console.warn('[Weather] Open-Meteo failed:',e.message,', trying wttr.in...');
+        fetch('https://wttr.in/Houston?format=j1')
           .then(function(r2){return r2.json();})
           .then(function(d2){
-            var cw=d2.current_weather||{};
-            var dl=d2.daily||{};
+            var cur=(d2.current_condition||[{}])[0];
+            var wea=(d2.weather||[{}])[0];
             sWeather({
-              temp:Math.round(cw.temperature||0),
-              hi:Math.round((dl.temperature_2m_max||[0])[0]),
-              lo:Math.round((dl.temperature_2m_min||[0])[0]),
-              precip:Math.round((dl.precipitation_probability_max||[0])[0]),
-              code:cw.weathercode||0
+              temp:parseInt(cur.temp_F||0),
+              hi:parseInt((wea.maxtempF)||0),
+              lo:parseInt((wea.mintempF)||0),
+              precip:(wea.hourly||[]).reduce(function(mx,h){return Math.max(mx,parseInt(h.chanceofrain||0));},0),
+              code:parseInt(cur.weatherCode||113)
             });
           })
-          .catch(function(e2){
-            console.error('[Weather] Both sources failed:',e2.message);
-            sWeather({temp:'--',hi:'--',lo:'--',precip:'--',code:0,err:true});
-          });
+          .catch(function(){sWeather({temp:'--',hi:'--',lo:'--',precip:'--',code:0,err:true});});
       });
   },[]);
 
@@ -1246,7 +1244,7 @@ function CommandCenter(p){
       {url:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+ds,sport:'NFL',logo:nflLogo,pri:null},
       {url:'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates='+ds,sport:'CFB',logo:ncaaLogo,
         pri:function(ts){return ts.some(function(t){return t.team&&t.team.id==='251';});}},
-      {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates='+ds+'&groups=5,8,4,62',sport:'NCAA BB',logo:ncaaLogo,
+      {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates='+ds+'&groups=5,8,4,12',sport:'CBSB',logo:ncaaLogo,
         pri:function(ts){return ts.some(function(t){return t.team&&t.team.id==='251';});}},
       {url:'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates='+ds,sport:'NHL',logo:function(t){return 'https://a.espncdn.com/i/teamlogos/nhl/500/'+(t.abbreviation||'').toLowerCase()+'.png';},pri:null},
     ];
@@ -1424,8 +1422,8 @@ function CommandCenter(p){
       liveGames.length===0
         ?cr('div',{style:{fontSize:10,color:'#555',paddingLeft:12,fontStyle:'italic'}},'Fetching scores...')
         :(function(){
-          var SPORT_ORDER=['NBA','MLB','NFL','CFB','NCAA BB','EPL','UCL','NHL'];
-          var SPORT_COLORS={NBA:'#CC0000',MLB:'#002147',NFL:'#013369',CFB:'#BF5700',EPL:'#3D195B',UCL:'#1B3F8B','NCAA BB':'#BF5700',NHL:'#1a1a3e'};
+          var SPORT_ORDER=['NBA','MLB','NFL','CFB','CBSB','EPL','UCL','NHL'];
+          var SPORT_COLORS={NBA:'#CC0000',MLB:'#002147',NFL:'#013369',CFB:'#BF5700',CBSB:'#005F20',EPL:'#3D195B',UCL:'#1B3F8B',NHL:'#1a1a3e'};
           // Build one long string of all games grouped by sport
           var tickerEls=[];
           SPORT_ORDER.forEach(function(sp){
@@ -1938,7 +1936,8 @@ function App(){
   var [sync,sSync]=uS('idle');
   var [lastSync,sLastSync]=uS('');
   var [liveRecs,sLiveRecs]=uS({});
-  var [trecVer,sTrecVer]=uS(0); // bumped when TREC updates to force re-render
+  var [trecVer,sTrecVer]=uS(0);
+  var [liveScores,sLiveScores]=uS({}); // {dt_team_opp: {r,sc:[my,opp]}} // bumped when TREC updates to force re-render
   var [notes,sNotes]=uS(function(){try{var n=sg('li_notes');return n||[];}catch(e){return [];}});
   var [newNote,sNewNote]=uS('');
   var [showNoteInput,sShowNoteInput]=uS(false);
@@ -1958,11 +1957,55 @@ function App(){
     sSync('syncing');
     fetchLiveRecs().then(function(recs){sLiveRecs(recs);});
     refreshMyTeamRecords().then(function(){sTrecVer(function(v){return v+1;});});
-    // Re-fetch records every 5 min to keep calendar fresh
+    // Fetch recent game scores and store in React state
+    function loadScores(){
+      var today=new Date();
+      var scoreMap={};
+      var dates=[];
+      for(var i=1;i<=4;i++){var d=new Date(today);d.setDate(today.getDate()-i);dates.push(d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'));}
+      var feeds=[
+        {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard',myAbbr:'HOU',lg:'MLB'},
+        {url:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',myAbbr:'HOU',lg:'NBA'},
+        {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',myId:'359',lg:'EPL'},
+        {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard',myId:'359',lg:'UCL'},
+        {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard',myId:'251',lg:'NCAA BB'},
+      ];
+      var all=[];
+      dates.forEach(function(ds){
+        feeds.forEach(function(f){
+          all.push(fetch(f.url+'?dates='+ds).then(function(r){return r.json();}).then(function(d){
+            (d.events||[]).forEach(function(ev){
+              var comp=ev.competitions&&ev.competitions[0];if(!comp) return;
+              var status=comp.status&&comp.status.type&&comp.status.type.name;
+              if(status!=='post') return;
+              var teams=comp.competitors||[];if(teams.length<2) return;
+              var myT=teams.find(function(t){
+                if(f.myId) return t.team&&t.team.id===f.myId;
+                return t.team&&t.team.abbreviation===f.myAbbr;
+              });
+              if(!myT) return;
+              var oppT=teams.find(function(t){return t!==myT;});if(!oppT) return;
+              var myScore=parseInt(myT.score||0),oppScore=parseInt(oppT.score||0);
+              var result=myScore>oppScore?'W':myScore<oppScore?'L':'D';
+              var gameDate=ev.date?ev.date.slice(0,10):'';if(!gameDate) return;
+              var oppAbbr=oppT.team&&oppT.team.abbreviation||'';
+              var key=gameDate+'_'+oppAbbr;
+              scoreMap[key]={r:result,sc:[myScore,oppScore]};
+            });
+          }).catch(function(){}));
+        });
+      });
+      Promise.allSettled(all).then(function(){
+        if(Object.keys(scoreMap).length>0) sLiveScores(scoreMap);
+      });
+    }
+    loadScores();
+    // Re-fetch records every 5 min
     var recIv=setInterval(function(){
-      _liveRecsFetched=false; // bust cache so fetchLiveRecs re-fetches
+      _liveRecsFetched=false;
       fetchLiveRecs().then(function(recs){sLiveRecs(recs);});
       refreshMyTeamRecords().then(function(){sTrecVer(function(v){return v+1;});});
+      loadScores();
     },300000);
     return function(){clearInterval(recIv);};
     dbLoad().then(function(res){
@@ -2122,12 +2165,8 @@ function App(){
           cr('div',{style:{fontSize:13,color:T.se,fontStyle:'italic',letterSpacing:'0.02em',lineHeight:1.5}},'"'+getDailyQuote().q+'"'),
           cr('div',{style:{fontSize:11,color:'#666',marginTop:3,letterSpacing:'0.05em'}}, '— '+getDailyQuote().a)
         ),
-        cr('div',{style:{position:'absolute',right:0,top:0,maxWidth:200,display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end',zIndex:1}},
-          cr('div',{style:{background:'rgba(255,255,255,0.04)',borderRadius:8,padding:'8px 10px',border:'1px solid rgba(255,255,255,0.06)',maxWidth:210}},
-            cr('div',{style:{fontSize:9,color:T.or,fontWeight:700,letterSpacing:'0.1em',marginBottom:4}},'📅 ON THIS DAY IN SPORTS'),
-            cr(OnThisDay,null)
-          ),
-          cr('div',{style:{display:'flex',alignItems:'center',gap:8,flexWrap:'nowrap'}},
+        cr('div',{style:{position:'absolute',right:0,top:0,maxWidth:220,display:'flex',flexDirection:'column',gap:5,alignItems:'flex-end',zIndex:1}},
+          cr('div',{style:{display:'flex',alignItems:'center',gap:10,paddingRight:2}},
             cr('button',{onClick:function(){if(isSBConfigured()) loadData();},style:{display:'flex',alignItems:'center',gap:4,background:'none',border:'none',cursor:isSBConfigured()?'pointer':'default',padding:0},title:sync==='error'?'Sync error':'Tap to refresh'},
               cr('div',{style:{width:7,height:7,borderRadius:'50%',background:sync==='synced'?'#4ade80':sync==='syncing'?'#fbbf24':sync==='error'?'#f87171':'#555'}}),
               cr('div',{style:{fontSize:8,color:sync==='synced'?'#4ade80':sync==='syncing'?'#fbbf24':sync==='error'?'#f87171':'#888',whiteSpace:'nowrap'}},
@@ -2138,6 +2177,10 @@ function App(){
               cr('span',{style:{fontSize:16,fontWeight:700,color:T.or}},best+' 🔥'),
               cr('span',{style:{fontSize:9,color:T.se}},'streak')
             )
+          ),
+          cr('div',{style:{background:'rgba(255,255,255,0.04)',borderRadius:8,padding:'8px 10px',border:'1px solid rgba(255,255,255,0.06)',maxWidth:220}},
+            cr('div',{style:{fontSize:9,color:T.or,fontWeight:700,letterSpacing:'0.1em',marginBottom:4}},'📅 ON THIS DAY IN SPORTS'),
+            cr(OnThisDay,null)
           )
         )
       )
@@ -2147,7 +2190,7 @@ function App(){
     ),
     cr('div',{style:{padding:'1.25rem 1.5rem 3rem'}},
       tab==='today'&&cr(TodayV,{all:all,upH:upH}),
-      tab==='calendar'&&cr(CalV,{all:all,evts:evts,addEvt:addEvt,dlEvt:dlEvt,liveRecs:liveRecs,trecVer:trecVer}),
+      tab==='calendar'&&cr(CalV,{all:all,evts:evts,addEvt:addEvt,dlEvt:dlEvt,liveRecs:liveRecs,trecVer:trecVer,liveScores:liveScores}),
       tab==='workout'&&cr(WktV,{wkts:wkts,addW:addW,edW:edW,dlW:dlW}),
       tab==='treadmill'&&cr(TmV,{tm:tm,addT:addT,dlT:dlT}),
       tab==='stats'&&cr(StatV,{all:all,wkts:wkts,tm:tm})
@@ -2367,7 +2410,15 @@ function WaterTracker(p){
 }
 
 function CalV(p){
-  var all=p.all,evts=p.evts||[],addEvt=p.addEvt,dlEvt=p.dlEvt,liveRecs=p.liveRecs||{},now=new Date();
+  var all=p.all,evts=p.evts||[],addEvt=p.addEvt,dlEvt=p.dlEvt,liveRecs=p.liveRecs||{},liveScores=p.liveScores||{},now=new Date();
+  // Helper: get live score for an SP event (overrides hardcoded result if available)
+  function getScore(ev){
+    if(ev.r) return ev; // already has result, use it
+    var key=ev.dt+'_'+ev.ab;
+    var ls=liveScores[key];
+    if(ls) return Object.assign({},ev,{r:ls.r,sc:ls.sc});
+    return ev;
+  }
   var [yr,sYr]=uS(now.getFullYear());
   var [mo,sMo]=uS(now.getMonth());
   var [sel,sSel]=uS(tod());
@@ -2388,7 +2439,7 @@ function CalV(p){
   for(var i=0;i<fd;i++) cells.push(null);
   for(var d=1;d<=nd;d++) cells.push(d);
   while(cells.length%7!==0) cells.push(null);
-  var selEvs=SP.filter(function(s){return s.dt===sel;});
+  var selEvs=SP.filter(function(s){return s.dt===sel;}).map(getScore);
   var selHol=HOL[sel],selMD=sel.slice(5),selBday=BD[selMD];
   var selData=all[sel]||{},hasSel=!!all[sel];
   var selDone=bools.filter(function(h){return selData[h.id];}).length;
@@ -2417,7 +2468,7 @@ function CalV(p){
           cells.map(function(d,i){
             if(!d) return cr('div',{key:i,style:{minHeight:135}});
             var ds2=ds(yr,mo,d);
-            var evs=SP.filter(function(s){return s.dt===ds2;});
+            var evs=SP.filter(function(s){return s.dt===ds2;}).map(getScore);
             var isT=ds2===td,isSel=ds2===sel;
             var bday=BD[mdk(mo,d)],hol=HOL[ds2];
             var data=all[ds2];
