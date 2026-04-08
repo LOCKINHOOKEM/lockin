@@ -2331,7 +2331,153 @@ function TodayV(p){
       cr('div',{style:{display:'flex',flexDirection:'column',gap:6}},nightHabs.map(renderHabit))
     ),
     cr(WeeklyCheckIn,{all:all,upH:upH}),
+    cr(NutritionTracker,{all:all,upH:upH,td:td}),
     cr(WaterTracker,{all:all,upH:upH,td:td})
+  );
+}
+
+
+// ── NUTRITION TRACKER ─────────────────────────────────────────────────────────
+function NutritionTracker(p){
+  var all=p.all,upH=p.upH,td=p.td;
+  var day=all[td]||{};
+  var CAL_GOAL=2000,PROT_GOAL=190;
+  var SECTIONS=['Breakfast','Lunch','Dinner','Snacks & Extra'];
+  var SECTION_EMOJIS={Breakfast:'🌅',Lunch:'☀️',Dinner:'🌙','Snacks & Extra':'🍎'};
+
+  // Each section stores meals at _meals_SECTION_YYYY-MM-DD
+  function sectionKey(sec){return '_meals_'+sec.replace(/ & /g,'_').replace(/ /g,'_')+'_'+td;}
+  function getMeals(sec){return day[sectionKey(sec)]||[];}
+  function saveMeals(sec,newMeals){upH(sectionKey(sec),newMeals);}
+
+  var [activeSection,sActiveSection]=uS(null); // which section is expanded for adding
+  var [mealText,sMealText]=uS('');
+  var [parsing,sParsing]=uS(false);
+  var [parseMsg,sParseMsg]=uS('');
+  var [collapsed,sCollapsed]=uS(false);
+
+  // Totals
+  var totalCal=SECTIONS.reduce(function(a,s){return a+getMeals(s).reduce(function(b,m){return b+(m.cal||0);},0);},0);
+  var totalProt=SECTIONS.reduce(function(a,s){return a+getMeals(s).reduce(function(b,m){return b+(m.prot||0);},0);},0);
+  var calPct=Math.min(100,Math.round(totalCal/CAL_GOAL*100));
+  var protPct=Math.min(100,Math.round(totalProt/PROT_GOAL*100));
+  var calCol=totalCal>CAL_GOAL*1.1?'#f87171':totalCal>=CAL_GOAL*0.9?'#4ade80':T.or;
+  var protCol=totalProt>=PROT_GOAL*0.9?'#4ade80':T.or;
+
+  // Auto-check habits
+  uE(function(){
+    if(totalCal>=CAL_GOAL*0.9&&!day.calories) upH('calories',true);
+    if(totalCal<CAL_GOAL*0.85&&day.calories) upH('calories',false);
+    if(totalProt>=PROT_GOAL*0.9&&!day.protein) upH('protein',true);
+    if(totalProt<PROT_GOAL*0.85&&day.protein) upH('protein',false);
+  },[totalCal,totalProt]);
+
+  function parseMeal(sec){
+    if(!mealText.trim()){sParseMsg('Describe what you ate first.');return;}
+    sParsing(true);sParseMsg('');
+    fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:200,
+        messages:[{role:'user',content:'Estimate calories and protein for this meal. Return ONLY valid JSON, no markdown: {"name":"short name max 40 chars","cal":number,"prot":number}. Use realistic standard portions. If uncertain give midpoint estimate. Meal: '+mealText}]
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var txt=(d.content&&d.content[0]&&d.content[0].text)||'';
+      var meal=JSON.parse(txt.replace(/```json|```/g,'').trim());
+      meal.time=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      saveMeals(sec,getMeals(sec).concat([meal]));
+      sMealText('');sActiveSection(null);sParsing(false);sParseMsg('');
+    })
+    .catch(function(){sParsing(false);sParseMsg('Try again or be more specific.');});
+  }
+
+  function SectionRow(sec){
+    var meals=getMeals(sec);
+    var secCal=meals.reduce(function(a,m){return a+(m.cal||0);},0);
+    var secProt=meals.reduce(function(a,m){return a+(m.prot||0);},0);
+    var isActive=activeSection===sec;
+    return cr('div',{key:sec,style:{borderTop:'1px solid '+T.bo,paddingTop:8,paddingBottom:8}},
+      cr('div',{style:{display:'flex',alignItems:'center',gap:8}},
+        cr('span',{style:{fontSize:14}},(SECTION_EMOJIS[sec]||'🍽️')),
+        cr('span',{style:{fontSize:13,fontWeight:600,flex:1}},sec),
+        meals.length>0&&cr('span',{style:{fontSize:11,color:T.se}},secCal+' cal · '+secProt+'g'),
+        cr('button',{
+          onClick:function(){sActiveSection(isActive?null:sec);sParseMsg('');sMealText('');},
+          style:{background:isActive?'#333':T.or,color:'#fff',border:'none',borderRadius:5,fontSize:10,fontWeight:700,padding:'3px 8px',cursor:'pointer'}
+        },isActive?'✕':'+ Add')
+      ),
+      // Logged meals for this section
+      meals.length>0&&cr('div',{style:{marginTop:6,display:'flex',flexDirection:'column',gap:4}},
+        meals.map(function(m,i){
+          return cr('div',{key:i,style:{display:'flex',alignItems:'center',gap:6,background:'#111',borderRadius:6,padding:'5px 8px'}},
+            cr('span',{style:{fontSize:12,flex:1,color:T.tx}},m.name),
+            cr('span',{style:{fontSize:11,fontWeight:700,color:T.or}},m.cal+' cal'),
+            cr('span',{style:{fontSize:11,color:T.se}},m.prot+'g'),
+            m.time&&cr('span',{style:{fontSize:9,color:'#555',marginLeft:2}},m.time),
+            cr('button',{onClick:function(){saveMeals(sec,meals.filter(function(_,j){return j!==i;}));},
+              style:{background:'none',border:'none',color:'#555',fontSize:13,cursor:'pointer',padding:'0 2px',marginLeft:2}},'×')
+          );
+        })
+      ),
+      // Add meal input for this section
+      isActive&&cr('div',{style:{marginTop:8}},
+        cr('textarea',{
+          autoFocus:true,
+          placeholder:'Describe what you ate — e.g. "Two eggs, toast with butter, OJ"',
+          value:mealText,
+          onChange:function(ev){sMealText(ev.target.value);},
+          rows:3,
+          style:{width:'100%',background:'#111',border:'1px solid '+T.bo,borderRadius:6,color:T.tx,fontSize:12,padding:'7px 10px',outline:'none',fontFamily:'inherit',resize:'none',lineHeight:1.5,marginBottom:6}
+        }),
+        parseMsg&&cr('div',{style:{fontSize:11,color:'#f87171',marginBottom:6}},parseMsg),
+        cr('button',{
+          onClick:function(){parseMeal(sec);},
+          disabled:parsing,
+          style:{width:'100%',background:parsing?'#333':T.or,color:'#fff',border:'none',borderRadius:7,padding:'0.6rem',fontSize:13,fontWeight:700,cursor:parsing?'not-allowed':'pointer'}
+        },parsing?'Estimating...':'Estimate & Log')
+      )
+    );
+  }
+
+  return cr('div',{style:{background:T.ca,borderRadius:10,border:'1px solid rgba(26,122,74,0.4)',marginBottom:10,overflow:'hidden'}},
+    // Header with totals
+    cr('div',{style:{padding:'0.875rem 1rem'}},
+      cr('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}},
+        cr('div',{style:{display:'flex',alignItems:'center',gap:6}},
+          cr('span',{style:{fontSize:18}},'🍽️'),
+          cr('span',{style:{fontSize:14,fontWeight:600}},'Nutrition')
+        ),
+        cr('button',{onClick:function(){sCollapsed(function(s){return !s;});},
+          style:{background:'none',border:'none',color:T.se,fontSize:11,cursor:'pointer',padding:'2px 6px'}},
+          collapsed?'▼ Show':'▲ Hide')
+      ),
+      cr('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}},
+        cr('div',null,
+          cr('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:3}},
+            cr('span',{style:{fontSize:11,color:T.se}},'Calories'),
+            cr('span',{style:{fontSize:12,fontWeight:700,color:calCol}},totalCal+' / '+CAL_GOAL)
+          ),
+          cr('div',{style:{height:6,background:'#111',borderRadius:99}},
+            cr('div',{style:{height:6,borderRadius:99,background:calCol,width:calPct+'%',transition:'width 0.4s'}}))
+        ),
+        cr('div',null,
+          cr('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:3}},
+            cr('span',{style:{fontSize:11,color:T.se}},'Protein'),
+            cr('span',{style:{fontSize:12,fontWeight:700,color:protCol}},totalProt+'g / '+PROT_GOAL+'g')
+          ),
+          cr('div',{style:{height:6,background:'#111',borderRadius:99}},
+            cr('div',{style:{height:6,borderRadius:99,background:protCol,width:protPct+'%',transition:'width 0.4s'}}))
+        )
+      )
+    ),
+    // Sections
+    !collapsed&&cr('div',{style:{padding:'0 1rem 0.75rem'}},
+      SECTIONS.map(function(sec){return SectionRow(sec);})
+    )
   );
 }
 
@@ -3359,11 +3505,80 @@ function StatV(p){
   var STAT_TABS=[
     {id:'overview',l:'Overview'},
     {id:'habits',l:'Habits'},
+    {id:'nutrition',l:'Nutrition'},
     {id:'sleep',l:'Sleep'},
     {id:'zyns',l:'Zyns'},
     {id:'workouts',l:'Workouts'},
     {id:'checkins',l:'Check-Ins'},
   ];
+
+  // ── NUTRITION HISTORY TAB ────────────────────────────────────────────────────
+  function NutritionTab(){
+    var CAL_GOAL=2000,PROT_GOAL=190;
+    var SECTIONS=['Breakfast','Lunch','Dinner','Snacks_Extra'];
+    function sectionKey(sec,date){return '_meals_'+sec+'_'+date;}
+    function getDayNutrition(date){
+      var dayData=all[date]||{};
+      var cal=0,prot=0;
+      ['Breakfast','Lunch','Dinner','Snacks_Extra'].forEach(function(sec){
+        var meals=dayData['_meals_'+sec+'_'+date]||[];
+        meals.forEach(function(m){cal+=m.cal||0;prot+=m.prot||0;});
+      });
+      return {cal:cal,prot:prot};
+    }
+    // Get last 30 days with nutrition data
+    var days30=Array.from({length:30},function(_,i){
+      var d=new Date();d.setDate(d.getDate()-i);
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }).reverse();
+    var nutData=days30.map(function(d){return Object.assign({date:d},getDayNutrition(d));});
+    var logged=nutData.filter(function(d){return d.cal>0;});
+    var avgCal=logged.length?Math.round(logged.reduce(function(a,d){return a+d.cal;},0)/logged.length):0;
+    var avgProt=logged.length?Math.round(logged.reduce(function(a,d){return a+d.prot;},0)/logged.length):0;
+    var daysOnTarget=logged.filter(function(d){return d.cal>=CAL_GOAL*0.85&&d.cal<=CAL_GOAL*1.15;}).length;
+
+    if(!logged.length) return cr('div',{style:{color:'#555',textAlign:'center',padding:'2rem',fontSize:14}},'No nutrition data yet — start logging meals in the Today tab');
+
+    return cr('div',null,
+      // Summary cards
+      cr('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,marginBottom:'1.25rem'}},
+        [
+          {title:'Avg Daily Calories',val:avgCal+'',sub:'goal: '+CAL_GOAL},
+          {title:'Avg Daily Protein',val:avgProt+'g',sub:'goal: '+PROT_GOAL+'g'},
+          {title:'Days Logged',val:String(logged.length),sub:'last 30 days'},
+          {title:'Days On Target',val:String(daysOnTarget),sub:'cal within 15% of goal'},
+        ].map(function(s){
+          return cr('div',{key:s.title,style:{background:T.ca,borderRadius:10,padding:'0.75rem 1rem',border:'1px solid '+T.bo}},
+            cr('div',{style:{fontSize:11,color:T.se,marginBottom:3}},s.title),
+            cr('div',{style:{fontSize:22,fontWeight:700,color:T.or,lineHeight:1}},s.val),
+            cr('div',{style:{fontSize:10,color:'#666',marginTop:2}},s.sub)
+          );
+        })
+      ),
+      // Daily history list
+      cr('div',{style:{fontSize:11,color:T.se,textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:8}},'Daily Log'),
+      cr('div',{style:{display:'flex',flexDirection:'column',gap:5}},
+        nutData.slice().reverse().filter(function(d){return d.cal>0;}).map(function(d){
+          var calPct=Math.min(100,Math.round(d.cal/CAL_GOAL*100));
+          var protPct=Math.min(100,Math.round(d.prot/PROT_GOAL*100));
+          var calCol=d.cal>CAL_GOAL*1.1?'#f87171':d.cal>=CAL_GOAL*0.9?'#4ade80':T.or;
+          var protCol=d.prot>=PROT_GOAL*0.9?'#4ade80':T.or;
+          var dateLabel=new Date(d.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+          return cr('div',{key:d.date,style:{background:T.ca,borderRadius:8,padding:'8px 12px',border:'1px solid '+T.bo}},
+            cr('div',{style:{display:'flex',alignItems:'center',gap:12,marginBottom:5}},
+              cr('span',{style:{fontSize:12,color:T.se,minWidth:110}},dateLabel),
+              cr('span',{style:{fontSize:13,fontWeight:700,color:calCol,minWidth:70}},d.cal+' cal'),
+              cr('span',{style:{fontSize:13,fontWeight:700,color:protCol}},d.prot+'g prot')
+            ),
+            cr('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}},
+              cr('div',{style:{height:4,background:'#111',borderRadius:99}},cr('div',{style:{height:4,borderRadius:99,background:calCol,width:calPct+'%'}})),
+              cr('div',{style:{height:4,background:'#111',borderRadius:99}},cr('div',{style:{height:4,borderRadius:99,background:protCol,width:protPct+'%'}}))
+            )
+          );
+        })
+      )
+    );
+  }
 
   return cr('div',null,
     cr('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginBottom:'1.25rem',background:T.ca,borderRadius:10,padding:6,border:'1px solid '+T.bo}},
@@ -3371,6 +3586,7 @@ function StatV(p){
     ),
     activeTab==='overview'&&cr(OverviewTab,null),
     activeTab==='habits'&&cr(HabitsTab,null),
+    activeTab==='nutrition'&&cr(NutritionTab,null),
     activeTab==='sleep'&&cr(SleepTab,null),
     activeTab==='zyns'&&cr(ZynsTab,null),
     activeTab==='workouts'&&cr(WorkoutsTab,null),
