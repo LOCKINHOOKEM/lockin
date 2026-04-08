@@ -3765,6 +3765,19 @@ function StandingsV(){
   // Start the timer once DOM is ready
   document.addEventListener('DOMContentLoaded', function() {
     resetTimer();
+    // ── Sleep button ──────────────────────────────────────────────────────────
+    var sleepBtn = document.createElement('button');
+    sleepBtn.id = 'sleep-btn';
+    sleepBtn.innerHTML = '🌙';
+    sleepBtn.title = 'Sleep Mode';
+    sleepBtn.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9998;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all 0.2s;';
+    sleepBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (active) { stopScreensaver(); resetTimer(); }
+      else { startScreensaver(); }
+    });
+    document.body.appendChild(sleepBtn);
+    // ─────────────────────────────────────────────────────────────────────────
     ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(function(evt) {
       document.addEventListener(evt, resetTimer, { passive: true });
     });
