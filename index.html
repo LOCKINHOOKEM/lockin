@@ -2342,23 +2342,24 @@ function NutritionTracker(p){
   var all=p.all,upH=p.upH,td=p.td;
   var day=all[td]||{};
   var CAL_GOAL=2000,PROT_GOAL=190;
-  var SECTIONS=['Breakfast','Lunch','Dinner','Snacks & Extra'];
-  var SECTION_EMOJIS={Breakfast:'🌅',Lunch:'☀️',Dinner:'🌙','Snacks & Extra':'🍎'};
+  var SECTIONS=[
+    {id:'breakfast',label:'Breakfast',em:'🌅'},
+    {id:'lunch',    label:'Lunch',    em:'☀️'},
+    {id:'dinner',   label:'Dinner',   em:'🌙'},
+    {id:'snacks',   label:'Snacks & Extra', em:'🍎'},
+  ];
 
-  // Each section stores meals at _meals_SECTION_YYYY-MM-DD
-  function sectionKey(sec){return '_meals_'+sec.replace(/ & /g,'_').replace(/ /g,'_')+'_'+td;}
-  function getMeals(sec){return day[sectionKey(sec)]||[];}
-  function saveMeals(sec,newMeals){upH(sectionKey(sec),newMeals);}
+  function sKey(id){return '_nut_'+id+'_'+td;}
+  function getMeals(id){return day[sKey(id)]||[];}
+  function saveMeals(id,meals){upH(sKey(id),meals);}
 
-  var [activeSection,sActiveSection]=uS(null); // which section is expanded for adding
-  var [mealText,sMealText]=uS('');
-  var [parsing,sParsing]=uS(false);
-  var [parseMsg,sParseMsg]=uS('');
+  var [activeSection,sActiveSection]=uS(null);
+  var [form,sForm]=uS({name:'',cal:'',prot:''});
   var [collapsed,sCollapsed]=uS(false);
 
-  // Totals
-  var totalCal=SECTIONS.reduce(function(a,s){return a+getMeals(s).reduce(function(b,m){return b+(m.cal||0);},0);},0);
-  var totalProt=SECTIONS.reduce(function(a,s){return a+getMeals(s).reduce(function(b,m){return b+(m.prot||0);},0);},0);
+  // Running totals
+  var totalCal=SECTIONS.reduce(function(a,s){return a+getMeals(s.id).reduce(function(b,m){return b+(m.cal||0);},0);},0);
+  var totalProt=SECTIONS.reduce(function(a,s){return a+getMeals(s.id).reduce(function(b,m){return b+(m.prot||0);},0);},0);
   var calPct=Math.min(100,Math.round(totalCal/CAL_GOAL*100));
   var protPct=Math.min(100,Math.round(totalProt/PROT_GOAL*100));
   var calCol=totalCal>CAL_GOAL*1.1?'#f87171':totalCal>=CAL_GOAL*0.9?'#4ade80':T.or;
@@ -2367,94 +2368,99 @@ function NutritionTracker(p){
   // Auto-check habits
   uE(function(){
     if(totalCal>=CAL_GOAL*0.9&&!day.calories) upH('calories',true);
-    if(totalCal<CAL_GOAL*0.85&&day.calories) upH('calories',false);
+    if(totalCal<CAL_GOAL*0.85&&day.calories===true) upH('calories',false);
     if(totalProt>=PROT_GOAL*0.9&&!day.protein) upH('protein',true);
-    if(totalProt<PROT_GOAL*0.85&&day.protein) upH('protein',false);
+    if(totalProt<PROT_GOAL*0.85&&day.protein===true) upH('protein',false);
   },[totalCal,totalProt]);
 
-  function parseMeal(sec){
-    if(!mealText.trim()){sParseMsg('Describe what you ate first.');return;}
-    sParsing(true);sParseMsg('');
-    fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:150,
-        messages:[{role:'user',content:'Nutrition estimator. Add up everything listed and return ONLY this exact JSON format, no markdown, no other text: {"name":"brief label under 35 chars","cal":NUMBER,"prot":NUMBER}. Use standard portions when unspecified. Sum all items together into one total. Input: '+mealText}]
-      })
-    })
-    .then(function(r){return r.json();})
-    .then(function(d){
-      var txt=(d.content&&d.content[0]&&d.content[0].text)||'';
-      // Robust parse — extract JSON even if there's surrounding text
-      var match=txt.match(/\{[^{}]+\}/);
-      if(!match) throw new Error('No JSON found');
-      var meal=JSON.parse(match[0]);
-      if(typeof meal.cal!=='number'||typeof meal.prot!=='number') throw new Error('Missing fields');
-      meal.name=meal.name||'Meal';
-      meal.time=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-      saveMeals(sec,getMeals(sec).concat([meal]));
-      sMealText('');sActiveSection(null);sParsing(false);sParseMsg('');
-    })
-    .catch(function(e){
-      console.error('[NutritionParse] error:',e.message);
-      sParsing(false);
-      sParseMsg('Parse failed — try submitting again. Usually works on retry.');
-    });
+  function addMeal(secId){
+    var cal=parseInt(form.cal);
+    var prot=parseInt(form.prot);
+    var name=(form.name||'').trim();
+    if(!name||isNaN(cal)||isNaN(prot)||cal<=0){return;}
+    var meal={name:name,cal:cal,prot:prot,time:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})};
+    saveMeals(secId,getMeals(secId).concat([meal]));
+    sForm({name:'',cal:'',prot:''});
+    sActiveSection(null);
   }
 
-  function SectionRow(sec){
-    var meals=getMeals(sec);
+  function SectionBlock(sec){
+    var meals=getMeals(sec.id);
     var secCal=meals.reduce(function(a,m){return a+(m.cal||0);},0);
     var secProt=meals.reduce(function(a,m){return a+(m.prot||0);},0);
-    var isActive=activeSection===sec;
-    return cr('div',{key:sec,style:{borderTop:'1px solid '+T.bo,paddingTop:8,paddingBottom:8}},
-      cr('div',{style:{display:'flex',alignItems:'center',gap:8}},
-        cr('span',{style:{fontSize:14}},(SECTION_EMOJIS[sec]||'🍽️')),
-        cr('span',{style:{fontSize:13,fontWeight:600,flex:1}},sec),
-        meals.length>0&&cr('span',{style:{fontSize:11,color:T.se}},secCal+' cal · '+secProt+'g'),
+    var isActive=activeSection===sec.id;
+    return cr('div',{key:sec.id,style:{borderTop:'1px solid '+T.bo,paddingTop:8,paddingBottom:6}},
+      // Section header
+      cr('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:meals.length?6:0}},
+        cr('span',{style:{fontSize:15}},sec.em),
+        cr('span',{style:{fontSize:13,fontWeight:600,flex:1}},sec.label),
+        meals.length>0&&cr('span',{style:{fontSize:11,color:T.se}},secCal+' cal · '+secProt+'g protein'),
         cr('button',{
-          onClick:function(){sActiveSection(isActive?null:sec);sParseMsg('');sMealText('');},
-          style:{background:isActive?'#333':T.or,color:'#fff',border:'none',borderRadius:5,fontSize:10,fontWeight:700,padding:'3px 8px',cursor:'pointer'}
-        },isActive?'✕':'+ Add')
+          onClick:function(){
+            sActiveSection(isActive?null:sec.id);
+            sForm({name:'',cal:'',prot:''});
+          },
+          style:{background:isActive?'#2a2a2a':T.or,color:'#fff',border:'none',borderRadius:5,fontSize:10,fontWeight:700,padding:'3px 9px',cursor:'pointer',flexShrink:0}
+        },isActive?'✕ Cancel':'+ Add')
       ),
-      // Logged meals for this section
-      meals.length>0&&cr('div',{style:{marginTop:6,display:'flex',flexDirection:'column',gap:4}},
+      // Logged meals
+      meals.length>0&&cr('div',{style:{display:'flex',flexDirection:'column',gap:3,marginBottom:isActive?8:0}},
         meals.map(function(m,i){
-          return cr('div',{key:i,style:{display:'flex',alignItems:'center',gap:6,background:'#111',borderRadius:6,padding:'5px 8px'}},
-            cr('span',{style:{fontSize:12,flex:1,color:T.tx}},m.name),
-            cr('span',{style:{fontSize:11,fontWeight:700,color:T.or}},m.cal+' cal'),
-            cr('span',{style:{fontSize:11,color:T.se}},m.prot+'g'),
-            m.time&&cr('span',{style:{fontSize:9,color:'#555',marginLeft:2}},m.time),
-            cr('button',{onClick:function(){saveMeals(sec,meals.filter(function(_,j){return j!==i;}));},
-              style:{background:'none',border:'none',color:'#555',fontSize:13,cursor:'pointer',padding:'0 2px',marginLeft:2}},'×')
+          return cr('div',{key:i,style:{display:'flex',alignItems:'center',gap:6,background:'#111',borderRadius:6,padding:'5px 10px'}},
+            cr('span',{style:{fontSize:12,flex:1,color:T.tx,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}},m.name),
+            cr('span',{style:{fontSize:12,fontWeight:700,color:T.or,flexShrink:0}},m.cal+' cal'),
+            cr('span',{style:{fontSize:11,color:T.se,flexShrink:0}},m.prot+'g'),
+            m.time&&cr('span',{style:{fontSize:9,color:'#555',flexShrink:0,marginLeft:2}},m.time),
+            cr('button',{
+              onClick:function(){saveMeals(sec.id,meals.filter(function(_,j){return j!==i;}));},
+              style:{background:'none',border:'none',color:'#555',fontSize:14,cursor:'pointer',padding:'0 2px',marginLeft:2,flexShrink:0}
+            },'×')
           );
         })
       ),
-      // Add meal input for this section
-      isActive&&cr('div',{style:{marginTop:8}},
-        cr('textarea',{
+      // Add form
+      isActive&&cr('div',{style:{background:'#111',borderRadius:8,padding:'10px',display:'flex',flexDirection:'column',gap:8}},
+        cr('div',{style:{fontSize:11,color:T.se,marginBottom:2}},'Ask me in chat for estimates on home-cooked or unlabeled food — then enter the numbers here.'),
+        cr('input',{
           autoFocus:true,
-          placeholder:'Describe what you ate — e.g. "Two eggs, toast with butter, OJ"',
-          value:mealText,
-          onChange:function(ev){sMealText(ev.target.value);},
-          rows:3,
-          style:{width:'100%',background:'#111',border:'1px solid '+T.bo,borderRadius:6,color:T.tx,fontSize:12,padding:'7px 10px',outline:'none',fontFamily:'inherit',resize:'none',lineHeight:1.5,marginBottom:6}
+          placeholder:'What did you eat? (e.g. "Chipotle chicken bowl")',
+          value:form.name,
+          onChange:function(ev){sForm(function(f){return Object.assign({},f,{name:ev.target.value});});},
+          style:{background:'#0c0c0c',border:'1px solid '+T.bo,borderRadius:6,color:T.tx,fontSize:13,padding:'7px 10px',outline:'none',width:'100%',fontFamily:'inherit'}
         }),
-        parseMsg&&cr('div',{style:{fontSize:11,color:'#f87171',marginBottom:6}},parseMsg),
+        cr('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}},
+          cr('div',null,
+            cr('div',{style:{fontSize:10,color:T.se,marginBottom:3}},'Calories'),
+            cr('input',{
+              type:'number',min:'0',max:'5000',placeholder:'e.g. 650',
+              value:form.cal,
+              onChange:function(ev){sForm(function(f){return Object.assign({},f,{cal:ev.target.value});});},
+              onKeyDown:function(ev){if(ev.key==='Enter') addMeal(sec.id);},
+              style:{background:'#0c0c0c',border:'1px solid '+T.bo,borderRadius:6,color:T.tx,fontSize:13,padding:'7px 10px',outline:'none',width:'100%',fontFamily:'inherit'}
+            })
+          ),
+          cr('div',null,
+            cr('div',{style:{fontSize:10,color:T.se,marginBottom:3}},'Protein (g)'),
+            cr('input',{
+              type:'number',min:'0',max:'300',placeholder:'e.g. 45',
+              value:form.prot,
+              onChange:function(ev){sForm(function(f){return Object.assign({},f,{prot:ev.target.value});});},
+              onKeyDown:function(ev){if(ev.key==='Enter') addMeal(sec.id);},
+              style:{background:'#0c0c0c',border:'1px solid '+T.bo,borderRadius:6,color:T.tx,fontSize:13,padding:'7px 10px',outline:'none',width:'100%',fontFamily:'inherit'}
+            })
+          )
+        ),
         cr('button',{
-          onClick:function(){parseMeal(sec);},
-          disabled:parsing,
-          style:{width:'100%',background:parsing?'#333':T.or,color:'#fff',border:'none',borderRadius:7,padding:'0.6rem',fontSize:13,fontWeight:700,cursor:parsing?'not-allowed':'pointer'}
-        },parsing?'Estimating...':'Estimate & Log')
+          onClick:function(){addMeal(sec.id);},
+          style:{background:T.or,color:'#fff',border:'none',borderRadius:7,padding:'0.6rem',fontSize:13,fontWeight:700,cursor:'pointer',width:'100%'}
+        },'Log Meal')
       )
     );
   }
 
   return cr('div',{style:{background:T.ca,borderRadius:10,border:'1px solid rgba(26,122,74,0.4)',marginBottom:10,overflow:'hidden'}},
-    // Header with totals
-    cr('div',{style:{padding:'0.875rem 1rem'}},
+    // Header
+    cr('div',{style:{padding:'0.875rem 1rem 0.75rem'}},
       cr('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}},
         cr('div',{style:{display:'flex',alignItems:'center',gap:6}},
           cr('span',{style:{fontSize:18}},'🍽️'),
@@ -2462,7 +2468,7 @@ function NutritionTracker(p){
         ),
         cr('button',{onClick:function(){sCollapsed(function(s){return !s;});},
           style:{background:'none',border:'none',color:T.se,fontSize:11,cursor:'pointer',padding:'2px 6px'}},
-          collapsed?'▼ Show':'▲ Hide')
+          collapsed?'▼ Expand':'▲ Collapse')
       ),
       cr('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}},
         cr('div',null,
@@ -2484,8 +2490,8 @@ function NutritionTracker(p){
       )
     ),
     // Sections
-    !collapsed&&cr('div',{style:{padding:'0 1rem 0.75rem'}},
-      SECTIONS.map(function(sec){return SectionRow(sec);})
+    !collapsed&&cr('div',{style:{padding:'0 1rem 0.875rem'}},
+      SECTIONS.map(function(sec){return SectionBlock(sec);})
     )
   );
 }
