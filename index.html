@@ -1958,59 +1958,12 @@ function App(){
     fetchLiveRecs().then(function(recs){sLiveRecs(recs);});
     refreshMyTeamRecords().then(function(){sTrecVer(function(v){return v+1;});});
     // Fetch recent game scores and store in React state
-    function loadScores(){
-      var today=new Date();
-      var scoreMap={};
-      var dates=[];
-      for(var i=1;i<=4;i++){var d=new Date(today);d.setDate(today.getDate()-i);dates.push(d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'));}
-      var feeds=[
-        {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard',myAbbr:'HOU',lg:'MLB'},
-        {url:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',myAbbr:'HOU',lg:'NBA'},
-        {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',myId:'359',lg:'EPL'},
-        {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard',myId:'359',lg:'UCL'},
-        {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard',myId:'251',lg:'NCAA BB'},
-      ];
-      var all=[];
-      dates.forEach(function(ds){
-        feeds.forEach(function(f){
-          all.push(fetch(f.url+'?dates='+ds).then(function(r){return r.json();}).then(function(d){
-            (d.events||[]).forEach(function(ev){
-              var comp=ev.competitions&&ev.competitions[0];if(!comp) return;
-              var status=comp.status&&comp.status.type&&comp.status.type.name;
-              if(status!=='post') return;
-              var teams=comp.competitors||[];if(teams.length<2) return;
-              var myT=teams.find(function(t){
-                if(f.myId) return t.team&&t.team.id===f.myId;
-                return t.team&&t.team.abbreviation===f.myAbbr;
-              });
-              if(!myT) return;
-              var oppT=teams.find(function(t){return t!==myT;});if(!oppT) return;
-              var myScore=parseInt(myT.score||0),oppScore=parseInt(oppT.score||0);
-              var result=myScore>oppScore?'W':myScore<oppScore?'L':'D';
-              var utcDate=ev.date?ev.date.slice(0,10):'';if(!utcDate) return;
-              // Also compute CDT local date (UTC-5) to handle timezone mismatch
-              var cstMs=new Date(ev.date).getTime()-5*3600000;
-              var cstD=new Date(cstMs);
-              var localDate=cstD.getFullYear()+'-'+String(cstD.getMonth()+1).padStart(2,'0')+'-'+String(cstD.getDate()).padStart(2,'0');
-              var entry={r:result,sc:[myScore,oppScore]};
-              // Key by sport+date — no opponent abbr to avoid mismatches
-              scoreMap[f.lg+'_'+utcDate]=entry;
-              scoreMap[f.lg+'_'+localDate]=entry;
-            });
-          }).catch(function(){}));
-        });
-      });
-      Promise.allSettled(all).then(function(){
-        if(Object.keys(scoreMap).length>0) sLiveScores(scoreMap);
-      });
-    }
-    loadScores();
+    // (scores fetched via dedicated useEffect below)
     // Re-fetch records every 5 min
     var recIv=setInterval(function(){
       _liveRecsFetched=false;
       fetchLiveRecs().then(function(recs){sLiveRecs(recs);});
       refreshMyTeamRecords().then(function(){sTrecVer(function(v){return v+1;});});
-      loadScores();
     },300000);
     return function(){clearInterval(recIv);};
     dbLoad().then(function(res){
@@ -2021,6 +1974,62 @@ function App(){
       sLastSync(new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}));
     });
   }
+
+  // ── Score updater — dedicated useEffect, runs on mount and every 5 min ─────
+  uE(function(){
+    var SCORE_FEEDS=[
+      {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard',myAbbr:'HOU',lg:'MLB'},
+      {url:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',myAbbr:'HOU',lg:'NBA'},
+      {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',myId:'359',lg:'EPL'},
+      {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard',myId:'359',lg:'UCL'},
+      {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard',myId:'251',lg:'NCAA BB'},
+    ];
+    function fetchScores(){
+      var scoreMap={};
+      var today=new Date();
+      var fetches=[];
+      // Check last 5 days
+      for(var i=0;i<=5;i++){
+        var d=new Date(today);d.setDate(today.getDate()-i);
+        var ds=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+        SCORE_FEEDS.forEach(function(f){
+          fetches.push(
+            fetch(f.url+'?dates='+ds)
+              .then(function(r){return r.json();})
+              .then(function(data){
+                (data.events||[]).forEach(function(ev){
+                  var comp=ev.competitions&&ev.competitions[0];if(!comp) return;
+                  var status=comp.status&&comp.status.type&&comp.status.type.name;
+                  if(status!=='post') return; // completed only
+                  var teams=comp.competitors||[];if(teams.length<2) return;
+                  var myT=teams.find(function(t){
+                    return f.myId?(t.team&&t.team.id===f.myId):(t.team&&t.team.abbreviation===f.myAbbr);
+                  });
+                  if(!myT) return;
+                  var oppT=teams.find(function(t){return t!==myT;});if(!oppT) return;
+                  var myScore=parseInt(myT.score||0),oppScore=parseInt(oppT.score||0);
+                  var result=myScore>oppScore?'W':myScore<oppScore?'L':'D';
+                  var entry={r:result,sc:[myScore,oppScore]};
+                  // Store under sport+date. ESPN uses UTC — also store under CDT (UTC-5/6)
+                  var utcDate=ev.date?ev.date.slice(0,10):'';
+                  if(utcDate) scoreMap[f.lg+'_'+utcDate]=entry;
+                  var cdtD=new Date(new Date(ev.date).getTime()-5*3600000);
+                  var cdtDate=cdtD.getFullYear()+'-'+String(cdtD.getMonth()+1).padStart(2,'0')+'-'+String(cdtD.getDate()).padStart(2,'0');
+                  scoreMap[f.lg+'_'+cdtDate]=entry;
+                });
+              })
+              .catch(function(){})
+          );
+        });
+      }
+      Promise.allSettled(fetches).then(function(){
+        sLiveScores(Object.assign({},scoreMap));
+      });
+    }
+    fetchScores();
+    var iv=setInterval(fetchScores,300000);
+    return function(){clearInterval(iv);};
+  },[]);
 
   uE(function(){
     var tgt=new Date(2026,8,5,19,0,0);
@@ -2060,6 +2069,28 @@ function App(){
       // Mark workout + stretch done today
       h['2026-04-06']=Object.assign({},h['2026-04-06']||{},{workout:true,stretch:true});
       ss('li_wkt_apr6','1');
+      dbSave(h,w,t);
+    }
+    if(!sg('li_wkt_apr7')){
+      var apr7wkt={
+        id:'wkt_20260407',date:'2026-04-07',type:'home',
+        exercises:[
+          {name:'March in Place',sets:[{r:'5 min',w:'bodyweight',n:'warm up'}]},
+          {name:'Arm Circles',sets:[{r:'10 each direction',w:'bodyweight',n:'warm up'}]},
+          {name:'Bodyweight Squats',sets:[{r:10,w:'bodyweight',n:'warm up'}]},
+          {name:'Push-ups',sets:[{r:15,w:'bodyweight',n:''},{r:15,w:'bodyweight',n:''},{r:15,w:'bodyweight',n:''}]},
+          {name:'Shoulder Taps',sets:[{r:20,w:'bodyweight',n:''},{r:20,w:'bodyweight',n:''},{r:20,w:'bodyweight',n:''}]},
+          {name:'Tricep Dips',sets:[{r:12,w:'bodyweight',n:'off chair'},{r:12,w:'bodyweight',n:'off chair'},{r:12,w:'bodyweight',n:'off chair'}]},
+          {name:'Plank',sets:[{r:'45s',w:'bodyweight',n:''},{r:'45s',w:'bodyweight',n:''},{r:'45s',w:'bodyweight',n:''}]},
+          {name:'Bicycle Crunches',sets:[{r:20,w:'bodyweight',n:''},{r:20,w:'bodyweight',n:''}]},
+          {name:'Crunches',sets:[{r:20,w:'bodyweight',n:''},{r:20,w:'bodyweight',n:''}]},
+          {name:'Leg Raises',sets:[{r:15,w:'bodyweight',n:''},{r:15,w:'bodyweight',n:''}]},
+        ]
+      };
+      var hasApr7=w.some(function(x){return x.id==='wkt_20260407';});
+      if(!hasApr7) w=[apr7wkt].concat(w);
+      h['2026-04-07']=Object.assign({},h['2026-04-07']||{},{workout:true,stretch:true});
+      ss('li_wkt_apr7','1');
       dbSave(h,w,t);
     }
     if(!sg('li_nyt_seeded')){
@@ -2105,8 +2136,8 @@ function App(){
     return function(){window.removeEventListener('focus',onFocus);};
   },[]);
   function handleSave(r){if(r.src==='error'){sSync('error');}else if(r.src==='local'){sSync('local');}else{sSync('synced');sLastSync(new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}));}}
-  function upH(id,v){var td=tod(),n=Object.assign({},all);n[td]=Object.assign({},n[td]||{});n[td][id]=v;sAll(n);sSync('syncing');dbSave(n,wkts,tm).then(handleSave);}
-  function addW(w){var n=[w].concat(wkts);sWkts(n);sSync('syncing');dbSave(all,n,tm).then(handleSave);}
+  function upH(id,v){if(!rdy) return; var td=tod(),n=Object.assign({},all);n[td]=Object.assign({},n[td]||{});n[td][id]=v;sAll(n);sSync('syncing');dbSave(n,wkts,tm).then(handleSave);}
+  function addW(w){if(!rdy) return; var n=[w].concat(wkts);sWkts(n);sSync('syncing');dbSave(all,n,tm).then(handleSave);}
   function edW(id,w){var n=wkts.map(function(x){return x.id===id?w:x;});sWkts(n);sSync('syncing');dbSave(all,n,tm).then(handleSave);}
   function dlW(id){var n=wkts.filter(function(x){return x.id!==id;});sWkts(n);sSync('syncing');dbSave(all,n,tm).then(handleSave);}
   function addT(s){var n=[s].concat(tm);sTm(n);sSync('syncing');dbSave(all,wkts,n).then(handleSave);}
