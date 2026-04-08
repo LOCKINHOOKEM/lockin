@@ -2380,19 +2380,28 @@ function NutritionTracker(p){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
-        max_tokens:200,
-        messages:[{role:'user',content:'Estimate calories and protein for this meal. Return ONLY valid JSON, no markdown: {"name":"short name max 40 chars","cal":number,"prot":number}. Use realistic standard portions. If uncertain give midpoint estimate. Meal: '+mealText}]
+        max_tokens:150,
+        messages:[{role:'user',content:'Nutrition estimator. Add up everything listed and return ONLY this exact JSON format, no markdown, no other text: {"name":"brief label under 35 chars","cal":NUMBER,"prot":NUMBER}. Use standard portions when unspecified. Sum all items together into one total. Input: '+mealText}]
       })
     })
     .then(function(r){return r.json();})
     .then(function(d){
       var txt=(d.content&&d.content[0]&&d.content[0].text)||'';
-      var meal=JSON.parse(txt.replace(/```json|```/g,'').trim());
+      // Robust parse — extract JSON even if there's surrounding text
+      var match=txt.match(/\{[^{}]+\}/);
+      if(!match) throw new Error('No JSON found');
+      var meal=JSON.parse(match[0]);
+      if(typeof meal.cal!=='number'||typeof meal.prot!=='number') throw new Error('Missing fields');
+      meal.name=meal.name||'Meal';
       meal.time=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
       saveMeals(sec,getMeals(sec).concat([meal]));
       sMealText('');sActiveSection(null);sParsing(false);sParseMsg('');
     })
-    .catch(function(){sParsing(false);sParseMsg('Try again or be more specific.');});
+    .catch(function(e){
+      console.error('[NutritionParse] error:',e.message);
+      sParsing(false);
+      sParseMsg('Parse failed — try submitting again. Usually works on retry.');
+    });
   }
 
   function SectionRow(sec){
