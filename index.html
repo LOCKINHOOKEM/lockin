@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LOCK IN</title>
+<title>LOCK IN — Scenic</title>
 <link rel="icon" href="https://a.espncdn.com/i/teamlogos/ncaa/500/251.png" type="image/png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -21,12 +21,47 @@ button{font-family:inherit;cursor:pointer;}
 @keyframes marquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 </style>
+
+<style id="scenic-styles">
+@keyframes bgFade{0%{opacity:0}10%{opacity:1}90%{opacity:1}100%{opacity:0}}
+@keyframes bgCycle{
+  0%,19%{background-image:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80')}
+  20%,39%{background-image:url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80')}
+  40%,59%{background-image:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80')}
+  60%,79%{background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80')}
+  80%,100%{background-image:url('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1920&q=80')}
+}
+body.scenic-mode{
+  background:#000 !important;
+  color:#f0ece8 !important;
+}
+body.scenic-mode::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background-size:cover;
+  background-position:center;
+  background-attachment:fixed;
+  animation:bgCycle 100s ease-in-out infinite;
+  filter:brightness(0.35) saturate(1.2);
+}
+body.scenic-mode #root{
+  background:transparent !important;
+}
+body.scenic-mode .glass-panel{
+  background:rgba(0,0,0,0.45) !important;
+  backdrop-filter:blur(12px) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+  border-color:rgba(255,255,255,0.12) !important;
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
 <script>
 var R=React,{useState:uS,useEffect:uE}=R,cr=R.createElement;
-var T={bg:'#0c0c0c',su:'#161616',ca:'#1e1e1e',bo:'#2a2a2a',or:'#BF5700',orl:'rgba(191,87,0,0.14)',tx:'#f0ece8',se:'#888',di:'#3a3a3a'};
+var T={bg:'#0c0c0c',su:'#161616',ca:'#1e1e1e',bo:'#2a2a2a',or:'#1A7A4A',orl:'rgba(26,122,74,0.14)',tx:'#f0ece8',se:'#888',di:'#3a3a3a'};
 var IS={background:'#111',border:'1px solid #2a2a2a',borderRadius:6,color:'#f0ece8',fontSize:13,padding:'6px 10px',outline:'none',width:'100%',fontFamily:'inherit'};
 function sg(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(x){return null;}}
 function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(x){}}
@@ -364,8 +399,8 @@ setInterval(refreshMyTeamRecords,300000);
 var TCOL={
   Astros:{bg:'rgba(0,45,98,0.92)',t1:'#a8c8f8',t2:'#7aacec'},
   Rockets:{bg:'rgba(206,17,65,0.88)',t1:'#ffccd8',t2:'#ffaabb'},
-  'UT Baseball':{bg:'rgba(191,87,0,0.88)',t1:'#ffe0b8',t2:'#ffc890'},
-  'UT Football':{bg:'rgba(191,87,0,0.88)',t1:'#ffe0b8',t2:'#ffc890'},
+  'UT Baseball':{bg:'rgba(26,122,74,0.88)',t1:'#ffe0b8',t2:'#ffc890'},
+  'UT Football':{bg:'rgba(26,122,74,0.88)',t1:'#ffe0b8',t2:'#ffc890'},
   Arsenal:{bg:'rgba(239,1,7,0.85)',t1:'#ffe0e0',t2:'#ffbbbb'},
 };
 
@@ -1343,7 +1378,7 @@ function CommandCenter(p){
   }).join('   |   ');
   var stockDoubled=stockTickerContent+'   |   '+stockTickerContent;
 
-  return cr('div',{style:{background:'#0e0e0e',borderBottom:'1px solid '+T.bo}},
+  return cr('div',{className:'glass-panel',style:{background:'#0e0e0e',borderBottom:'1px solid '+T.bo}},
     // ── STOCK ROW ─────────────────────────────────────────────────────────────
     cr('div',{style:{display:'flex',alignItems:'center',borderBottom:'1px solid '+T.bo,height:28,overflow:'hidden'}},
       cr('div',{style:{background:T.or,padding:'0 10px',height:'100%',display:'flex',alignItems:'center',flexShrink:0}},
@@ -1389,7 +1424,7 @@ function CommandCenter(p){
         cr('div',{style:{fontSize:9,color:'#555',marginTop:2}},Math.round((end2026-now)/86400000)+' days remaining in 2026')
       ),
       // Power Level
-      cr('div',{style:{background:T.ca,borderRadius:8,padding:'5px 12px',border:'1px solid rgba(191,87,0,0.35)',minWidth:160,flexShrink:0}},
+      cr('div',{style:{background:T.ca,borderRadius:8,padding:'5px 12px',border:'1px solid rgba(26,122,74,0.35)',minWidth:160,flexShrink:0}},
         cr('div',{style:{fontSize:10,color:T.or,fontWeight:700,letterSpacing:'0.06em',marginBottom:3}},'⚡ POWER LEVEL'),
         cr('div',{style:{display:'flex',alignItems:'center',gap:8}},
           cr('div',{style:{flex:1,height:5,background:'#111',borderRadius:99}},cr('div',{style:{height:5,borderRadius:99,background:pwCol,width:power+'%',transition:'width 0.5s'}})),
@@ -1408,7 +1443,7 @@ function CommandCenter(p){
         ?cr('div',{style:{fontSize:10,color:'#555',paddingLeft:12,fontStyle:'italic'}},'Fetching scores...')
         :(function(){
           var SPORT_ORDER=['NBA','MLB','NFL','CFB','CBSB','EPL','UCL','NHL'];
-          var SPORT_COLORS={NBA:'#CC0000',MLB:'#002147',NFL:'#013369',CFB:'#BF5700',CBSB:'#005F20',EPL:'#3D195B',UCL:'#1B3F8B',NHL:'#1a1a3e'};
+          var SPORT_COLORS={NBA:'#CC0000',MLB:'#002147',NFL:'#013369',CFB:'#1A7A4A',CBSB:'#005F20',EPL:'#3D195B',UCL:'#1B3F8B',NHL:'#1a1a3e'};
           // Build one long string of all games grouped by sport
           var tickerEls=[];
           SPORT_ORDER.forEach(function(sp){
@@ -1431,7 +1466,7 @@ function CommandCenter(p){
               tickerEls.push(cr('span',{key:sp+gi,style:{
                 display:'inline-flex',alignItems:'center',gap:3,
                 padding:'0 10px',borderRight:'1px solid #252525',
-                background:myTeam?'rgba(191,87,0,0.12)':'transparent',
+                background:myTeam?'rgba(26,122,74,0.12)':'transparent',
                 flexShrink:0,height:30
               }},
                 cr('img',{src:t0.logo,style:{width:14,height:14,objectFit:'contain',flexShrink:0},onError:function(e){e.target.style.display='none';}}),
@@ -2137,7 +2172,7 @@ function App(){
   var TABS=[{id:'today',l:'Today'},{id:'calendar',l:'📅 Calendar'},{id:'workout',l:'Workouts'},{id:'treadmill',l:'Treadmill'},{id:'standings',l:'📊 Standings'},{id:'stats',l:'Stats'}];
   return cr('div',{style:{background:T.bg,minHeight:'100vh',color:T.tx}},
     cr(CommandCenter,{all:all}),
-    cr('div',{style:{background:T.su,borderBottom:'1px solid '+T.bo,padding:'1rem 1.5rem',position:'sticky',top:0,zIndex:100}},
+    cr('div',{className:'glass-panel',style:{background:T.su,borderBottom:'1px solid '+T.bo,padding:'1rem 1.5rem',position:'sticky',top:0,zIndex:100}},
       cr('div',{style:{textAlign:'center',marginBottom:'0.75rem'}},
         cr('div',{style:{fontSize:10,color:T.se,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:6}},'COUNTDOWN — Texas Longhorns vs Texas State Bobcats — Week 1 — Sep 5, 2026'),
         cd.dn?cr('div',{style:{fontSize:22,fontWeight:700,color:T.or}},"🤘 HOOK 'EM — GAME TIME!"):
@@ -2176,7 +2211,7 @@ function App(){
                 style:{background:'rgba(255,255,255,0.05)',border:'1px dashed rgba(255,255,255,0.15)',borderRadius:6,color:'rgba(255,255,255,0.3)',fontSize:10,padding:'4px 8px',cursor:'pointer',textAlign:'left',width:'100%'}},
                 '+ sticky note')
         ),
-        cr('div',{style:{fontSize:clamp(42,6,'vw'),fontWeight:900,color:T.or,letterSpacing:'0.08em',lineHeight:1,textShadow:'0 0 40px rgba(191,87,0,0.4)'}},
+        cr('div',{style:{fontSize:clamp(42,6,'vw'),fontWeight:900,color:T.or,letterSpacing:'0.08em',lineHeight:1,textShadow:'0 0 40px rgba(26,122,74,0.5)'}},
           'LOCK IN'
         ),
         cr('div',{style:{fontSize:15,color:T.se,letterSpacing:'0.12em',textTransform:'uppercase',marginTop:4,fontWeight:500}},
@@ -2206,7 +2241,7 @@ function App(){
         )
       )
     ),
-    cr('div',{style:{display:'flex',background:T.su,borderBottom:'1px solid '+T.bo,position:'sticky',top:'130px',zIndex:99}},
+    cr('div',{className:'glass-panel',style:{display:'flex',background:T.su,borderBottom:'1px solid '+T.bo,position:'sticky',top:'130px',zIndex:99}},
       TABS.map(function(t){return cr('button',{key:t.id,onClick:function(){sTab(t.id);},style:{flex:1,padding:'0.7rem 0.25rem',background:'none',border:'none',borderBottom:'2px solid '+(tab===t.id?T.or:'transparent'),color:tab===t.id?T.or:T.se,fontSize:13,fontWeight:tab===t.id?600:400,cursor:'pointer'}},t.l);})
     ),
     cr('div',{style:{padding:'1.25rem 1.5rem 3rem'}},
@@ -2253,8 +2288,8 @@ function TodayV(p){
   function renderHabit(h){
     var val=day[h.id],str=h.tp==='bool'?calcStreak(all,h.id):null;
     var isCore=h.cat==='core';
-    var borderStyle=isCore?'1.5px solid rgba(191,87,0,0.5)':'1px solid '+T.bo;
-    var glowStyle=isCore?'0 0 8px rgba(191,87,0,0.15)':'none';
+    var borderStyle=isCore?'1.5px solid rgba(26,122,74,0.5)':'1px solid '+T.bo;
+    var glowStyle=isCore?'0 0 8px rgba(26,122,74,0.15)':'none';
     if(h.tp==='num') return cr('div',{key:h.id,style:{background:T.ca,borderRadius:10,padding:'0.75rem 1rem',border:borderStyle,boxShadow:glowStyle,display:'flex',alignItems:'center',gap:12}},
       cr('span',{style:{fontSize:18}},h.em),cr('div',{style:{flex:1,fontSize:14,color:T.se}},h.lb),
       cr('input',{type:'number',min:0,max:30,value:val||'',placeholder:'0',onChange:function(ev){upH(h.id,parseInt(ev.target.value)||0);},style:{width:60,background:'#111',border:'1px solid '+T.bo,borderRadius:6,color:T.tx,fontSize:15,textAlign:'center',padding:'5px',outline:'none'}})
@@ -2267,7 +2302,7 @@ function TodayV(p){
       var sleptEnough=durNum>=7;
       // Auto-update sleep boolean based on duration
       if(dur&&!!day.sleep!==sleptEnough){ upH('sleep',sleptEnough); }
-      return cr('div',{key:'sleep',style:{background:T.ca,borderRadius:10,padding:'0.75rem 1rem',border:'1.5px solid rgba(191,87,0,0.5)',boxShadow:'0 0 8px rgba(191,87,0,0.15)'}},
+      return cr('div',{key:'sleep',style:{background:T.ca,borderRadius:10,padding:'0.75rem 1rem',border:'1.5px solid rgba(26,122,74,0.5)',boxShadow:'0 0 8px rgba(26,122,74,0.15)'}},
         cr('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:6}},
           cr('span',{style:{fontSize:18}},'😴'),
           cr('span',{style:{fontSize:14,color:T.se,flex:1}},'Sleep Tracker'),
@@ -2312,7 +2347,7 @@ function TodayV(p){
         cr('div',{style:{fontSize:22,fontWeight:700,color:T.or}},done+'/'+bools.length),
         cr('div',{style:{height:4,background:'#111',borderRadius:99,marginTop:6}},cr('div',{style:{height:4,borderRadius:99,background:T.or,width:pct+'%',transition:'width 0.3s'}}))
       ),
-      cr('div',{style:{flex:1,minWidth:180,background:T.ca,borderRadius:10,padding:'0.75rem 1rem',border:'1px solid rgba(191,87,0,0.4)'}},
+      cr('div',{style:{flex:1,minWidth:180,background:T.ca,borderRadius:10,padding:'0.75rem 1rem',border:'1px solid rgba(26,122,74,0.4)'}},
         cr('div',{style:{fontSize:11,color:T.or,marginBottom:4}},'⚡ POWER LEVEL'),
         cr('div',{style:{fontSize:22,fontWeight:700,color:T.or}},powerPct+'%'),
         cr('div',{style:{height:4,background:'#111',borderRadius:99,marginTop:6}},cr('div',{style:{height:4,borderRadius:99,background:'linear-gradient(90deg,'+T.or+',#ffd700)',width:powerPct+'%',transition:'width 0.3s'}}))
@@ -2506,10 +2541,10 @@ function CalV(p){
             var score=data?bools.filter(function(h){return data[h.id];}).length/bools.length:-1;
             var hasStar=evs.some(function(x){return x.star;});
             var bg=T.ca;
-            if(score>=1) bg='rgba(191,87,0,0.28)';
-            else if(score>0.6) bg='rgba(191,87,0,0.14)';
-            else if(score>0) bg='rgba(191,87,0,0.06)';
-            return cr('div',{key:i,onClick:function(){sSel(ds2);},style:{minHeight:135,background:bg,borderRadius:7,cursor:'pointer',border:isSel?'2px solid '+T.or:isT?'1.5px solid rgba(191,87,0,0.55)':'1px solid '+T.bo,padding:'5px',display:'flex',flexDirection:'column'}},
+            if(score>=1) bg='rgba(26,122,74,0.28)';
+            else if(score>0.6) bg='rgba(26,122,74,0.14)';
+            else if(score>0) bg='rgba(26,122,74,0.06)';
+            return cr('div',{key:i,onClick:function(){sSel(ds2);},style:{minHeight:135,background:bg,borderRadius:7,cursor:'pointer',border:isSel?'2px solid '+T.or:isT?'1.5px solid rgba(26,122,74,0.55)':'1px solid '+T.bo,padding:'5px',display:'flex',flexDirection:'column'}},
               cr('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:2}},
                 cr('span',{style:{fontSize:13,fontWeight:isT?700:500,color:isT?T.or:T.tx}},d),
                 hasStar&&cr('span',{style:{fontSize:11,color:T.or}},'⭐')
@@ -2564,7 +2599,7 @@ function CalV(p){
     cr('div',{style:{display:'flex',flexWrap:'wrap',gap:'5px 14px',marginBottom:'1rem',paddingBottom:'1rem',borderBottom:'1px solid '+T.bo}},
       ['Astros','Rockets','Arsenal','UT Baseball','UT Football'].map(function(t){var col=TCOL[t];return col?cr('div',{key:t,style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.se}},cr('div',{style:{width:12,height:12,borderRadius:3,background:col.bg}}),t+(TREC[t]?' ('+TREC[t]+')':'')):null;}),
       cr('div',{style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:'#c090f0'}},'🎂 birthday'),
-      cr('div',{style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.se}},cr('div',{style:{width:12,height:12,borderRadius:3,background:'rgba(191,87,0,0.28)'}}), 'habits done')
+      cr('div',{style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:T.se}},cr('div',{style:{width:12,height:12,borderRadius:3,background:'rgba(26,122,74,0.28)'}}), 'habits done')
     ),
     cr('div',{style:{background:T.ca,borderRadius:12,padding:'1rem 1.25rem',border:'1px solid '+T.bo,marginBottom:'1.25rem'}},
       cr('div',{style:{fontSize:15,fontWeight:600,marginBottom:8}},fmtl(sel)),
@@ -2974,7 +3009,7 @@ function WktV(p){
         if(!entries.length) return null;
         return cr('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:8}},
           entries.map(function(pr){
-            return cr('div',{key:pr.name,style:{background:T.ca,borderRadius:8,padding:'0.75rem',border:'1px solid rgba(191,87,0,0.3)'}},
+            return cr('div',{key:pr.name,style:{background:T.ca,borderRadius:8,padding:'0.75rem',border:'1px solid rgba(26,122,74,0.3)'}},
               cr('div',{style:{fontSize:12,fontWeight:700,color:T.or,marginBottom:4,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}},pr.name),
               cr('div',{style:{fontSize:20,fontWeight:700,color:T.tx,lineHeight:1}},pr.rawWeight+(typeof pr.rawWeight==='number'?' lbs':'')),
               cr('div',{style:{fontSize:11,color:T.se,marginTop:3}},pr.reps+' reps · '+fmts(pr.date))
@@ -2996,7 +3031,7 @@ function WktV(p){
             cr('div',null,
               cr('div',{style:{display:'flex',alignItems:'center',gap:6}},
                 cr('div',{style:{fontSize:14,fontWeight:600}},fmts(wk.date)),
-                hasPR&&cr('span',{style:{fontSize:11,background:'rgba(191,87,0,0.2)',color:T.or,borderRadius:4,padding:'1px 6px',fontWeight:700}},'🏆 PR')
+                hasPR&&cr('span',{style:{fontSize:11,background:'rgba(26,122,74,0.2)',color:T.or,borderRadius:4,padding:'1px 6px',fontWeight:700}},'🏆 PR')
               ),
               cr('div',{style:{fontSize:12,color:T.se,marginTop:2}},wk.type==='gym'?'🏋️ Gym session':'🏠 Home session')
             ),
@@ -3057,7 +3092,7 @@ function TmV(p){
       else if(tMi2<748){dest='Houston → Nashville';goal=748;}
       else{dest='Houston → New York City';goal=1628;}
       var pct2=Math.min(100,Math.round(tMi2/goal*100));
-      return cr('div',{style:{background:T.ca,borderRadius:10,padding:'0.875rem 1rem',border:'1px solid rgba(191,87,0,0.4)',marginBottom:'1rem'}},
+      return cr('div',{style:{background:T.ca,borderRadius:10,padding:'0.875rem 1rem',border:'1px solid rgba(26,122,74,0.4)',marginBottom:'1rem'}},
         cr('div',{style:{fontSize:11,color:T.or,fontWeight:700,letterSpacing:'0.06em',marginBottom:4}},'🏃 THE GRIND TRACKER'),
         cr('div',{style:{fontSize:13,color:T.tx,marginBottom:2}},Math.round(tMi2)+' miles logged'),
         cr('div',{style:{fontSize:11,color:T.se,marginBottom:6}},'Current destination: '+dest+' ('+goal+'mi) — '+(goal-Math.round(tMi2))+'mi to go'),
@@ -3277,7 +3312,7 @@ function StatV(p){
           var pct=Math.round(data.reduce(function(a,v){return a+v;},0)/30*100);
           var streak=calcStreak(all,h.id);
           var isCore=h.cat==='core';
-          return cr('div',{key:h.id,style:{background:T.ca,borderRadius:8,padding:'10px 12px',border:'1px solid '+(isCore?'rgba(191,87,0,0.3)':T.bo)}},
+          return cr('div',{key:h.id,style:{background:T.ca,borderRadius:8,padding:'10px 12px',border:'1px solid '+(isCore?'rgba(26,122,74,0.3)':T.bo)}},
             cr('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}},
               cr('div',{style:{display:'flex',alignItems:'center',gap:6}},
                 cr('span',{style:{fontSize:16}},h.em),
@@ -3312,7 +3347,7 @@ function StatV(p){
         cr('div',{style:{fontSize:11,color:T.se,textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:8}},'🏆 Personal Records'),
         cr('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(170px,1fr))',gap:8}},
           prEntries.map(function(pr){
-            return cr('div',{key:pr.name,style:{background:T.ca,borderRadius:8,padding:'0.75rem',border:'1px solid rgba(191,87,0,0.3)'}},
+            return cr('div',{key:pr.name,style:{background:T.ca,borderRadius:8,padding:'0.75rem',border:'1px solid rgba(26,122,74,0.3)'}},
               cr('div',{style:{fontSize:11,fontWeight:700,color:T.or,marginBottom:3,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}},pr.name),
               cr('div',{style:{fontSize:20,fontWeight:700,color:T.tx,lineHeight:1}},pr.rawWeight+(typeof pr.rawWeight==='number'?' lbs':'')),
               cr('div',{style:{fontSize:10,color:T.se,marginTop:2}},pr.reps+' reps · '+fmts(pr.date))
@@ -3411,13 +3446,13 @@ function StandingsV(){
 
   // Fetch on tab switch
   uE(function(){
-    if(activeTab==='mlb') fetchStandings('mlb','https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/standings');
-    if(activeTab==='nba') fetchStandings('nba','https://site.api.espn.com/apis/site/v2/sports/basketball/nba/standings');
-    if(activeTab==='epl') fetchStandings('epl','https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/standings');
+    if(activeTab==='mlb') fetchStandings('mlb','https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?seasontype=2');
+    if(activeTab==='nba') fetchStandings('nba','https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?seasontype=2');
+    if(activeTab==='epl') fetchStandings('epl','https://site.api.espn.com/apis/v2/sports/soccer/eng.1/standings?seasontype=2');
     if(activeTab==='cbsb') fetchStandings('cbsb','https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/rankings');
     if(activeTab==='cbb') fetchStandings('cbb','https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/rankings');
     if(activeTab==='cfb') fetchStandings('cfb','https://site.api.espn.com/apis/site/v2/sports/football/college-football/rankings');
-    if(activeTab==='mlb_leaders') fetchStandings('mlb_hit','https://corsproxy.io/?url='+encodeURIComponent('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/leaders?seasontype=2&limit=10'));
+
   },[activeTab]);
 
   var tabStyle=function(t){return {padding:'6px 12px',background:activeTab===t?T.or:'none',color:activeTab===t?'#fff':T.se,border:'none',borderRadius:6,fontSize:11,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'};};
@@ -3436,7 +3471,7 @@ function StandingsV(){
           cr('tbody',null,
             entries.map(function(row,i){
               var isMyTeam=row.myTeam;
-              return cr('tr',{key:i,style:{borderBottom:'1px solid #1a1a1a',background:isMyTeam?'rgba(191,87,0,0.1)':'transparent'}},
+              return cr('tr',{key:i,style:{borderBottom:'1px solid #1a1a1a',background:isMyTeam?'rgba(26,122,74,0.1)':'transparent'}},
                 cr('td',{style:{padding:'6px 8px 6px 0',display:'flex',alignItems:'center',gap:6}},
                   row.logo&&cr('img',{src:row.logo,style:{width:16,height:16,objectFit:'contain'},onError:function(e){e.target.style.display='none';}}),
                   cr('span',{style:{fontSize:12,fontWeight:isMyTeam?700:400,color:isMyTeam?T.or:T.tx}},row.name)
@@ -3581,7 +3616,7 @@ function StandingsV(){
           var nickname=team.name||team.nickname||'';
           var displayName=school&&nickname&&school!==nickname?school+' '+nickname:(team.displayName||school||nickname||'—');
           var isTX=team.id==='251'||(team.location||'').toLowerCase()==='texas'||(team.abbreviation||'').toLowerCase()==='tex';
-          return cr('div',{key:i,style:{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',borderRadius:6,background:isTX?'rgba(191,87,0,0.1)':i%2===0?'#111':'transparent',border:isTX?'1px solid rgba(191,87,0,0.3)':'1px solid transparent'}},
+          return cr('div',{key:i,style:{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',borderRadius:6,background:isTX?'rgba(26,122,74,0.1)':i%2===0?'#111':'transparent',border:isTX?'1px solid rgba(26,122,74,0.3)':'1px solid transparent'}},
             cr('span',{style:{fontSize:12,fontWeight:700,color:isTX?T.or:'#555',minWidth:22,textAlign:'right'}},'#'+(r.current||i+1)),
             logoUrl
               ?cr('img',{src:logoUrl,style:{width:20,height:20,objectFit:'contain'},onError:function(e){e.target.style.display='none';}})
@@ -3651,7 +3686,7 @@ function StandingsV(){
     {id:'cbsb',l:'CBSB'},
     {id:'cbb',l:'CBB'},
     {id:'cfb',l:'CFB'},
-    {id:'mlb_leaders',l:'MLB Stats'},
+
   ];
 
   return cr('div',null,
@@ -3664,9 +3699,29 @@ function StandingsV(){
     activeTab==='cbsb'&&cr(function(){return RankingsTab('cbsb','College Baseball Top 25');},null),
     activeTab==='cbb'&&cr(function(){return RankingsTab('cbb','College Basketball Top 25');},null),
     activeTab==='cfb'&&cr(function(){return RankingsTab('cfb','College Football Top 25');},null),
-    activeTab==='mlb_leaders'&&cr(MLBLeaders,null)
+
   );
 }
+
+// ── SCENIC MODE TOGGLE ───────────────────────────────────────────────────────
+(function(){
+  var btn=document.createElement('button');
+  btn.id='scenic-btn';
+  btn.innerHTML='🏔️';
+  btn.title='Toggle Scenic Mode';
+  btn.style.cssText='position:fixed;bottom:16px;right:16px;z-index:9999;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all 0.2s';
+  var active=localStorage.getItem('scenic_mode')==='1';
+  if(active) document.body.classList.add('scenic-mode');
+  btn.addEventListener('click',function(){
+    active=!active;
+    document.body.classList.toggle('scenic-mode',active);
+    localStorage.setItem('scenic_mode',active?'1':'0');
+    btn.style.background=active?'rgba(26,122,74,0.6)':'rgba(0,0,0,0.5)';
+  });
+  if(active) btn.style.background='rgba(26,122,74,0.6)';
+  document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(btn);});
+})();
+
 
 ReactDOM.render(cr(App,null),document.getElementById('root'));
 </script>
