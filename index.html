@@ -3454,37 +3454,33 @@ function StandingsV(){
   function MLBStandings(){
     var d=data.mlb;
     if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading MLB standings...');
-    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing the tab.');
+    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing.');
     var MY_TEAMS={HOU:true};
-    var MLB_OVR_LOGO={ATH:'oak',CWS:'cws',KC:'kc',TB:'tb',WSH:'wsh',SD:'sd',SF:'sf'};
-    function mlbLogo(abbr){return 'https://a.espncdn.com/i/teamlogos/mlb/500/'+(MLB_OVR_LOGO[abbr]||abbr.toLowerCase())+'.png';}
-    function parseDiv(group){
-      var entries=(group.standings&&group.standings.entries)||(group.entries)||[];
-      return entries.map(function(e){
+    var OVR={ATH:'oak',CWS:'cws',KC:'kc',TB:'tb',WSH:'wsh',SD:'sd',SF:'sf'};
+    function logo(abbr){return 'https://a.espncdn.com/i/teamlogos/mlb/500/'+(OVR[abbr]||abbr.toLowerCase())+'.png';}
+    function parseEntries(entries,title){
+      var rows=entries.map(function(e){
         var abbr=e.team&&e.team.abbreviation||'';
         var stats={};
         (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||String(s.value||'');});
-        return {
-          name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,
-          logo:mlbLogo(abbr),
-          myTeam:!!MY_TEAMS[abbr],
-          vals:[stats.W||'—',stats.L||'—',stats.PCT||stats.WP||'—',stats.GB||'—',stats.L10||'—',stats.STRK||stats.streak||'—']
-        };
-      }).filter(function(e){return e.name;});
+        return {name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,logo:logo(abbr),myTeam:!!MY_TEAMS[abbr],
+          vals:[stats.W||'—',stats.L||'—',stats.PCT||stats.WP||'—',stats.GB||'—',stats.L10||'—',stats.STRK||stats.streak||'—']};
+      }).filter(function(r){return r.name;});
+      return {title:title,entries:rows};
     }
     var sections=[];
-    function dig(node,parentName){
-      if(node.standings&&node.standings.entries&&node.standings.entries.length){
-        sections.push({title:parentName||node.name||'Division',entries:parseDiv(node)});
-      } else if(node.children){
-        node.children.forEach(function(child){dig(child,(node.name?node.name+' · ':'')+child.name);});
-      } else if(node.entries){
-        sections.push({title:parentName||node.name||'Division',entries:parseDiv(node)});
+    // Walk tree collecting any node that has standings.entries
+    function walk(node,label){
+      var ents=node.standings&&node.standings.entries;
+      if(ents&&ents.length){sections.push(parseEntries(ents,label||node.name||'Division'));return;}
+      if(node.children&&node.children.length){
+        node.children.forEach(function(ch){walk(ch,ch.name||(label?label+' Division':'Division'));});
+        return;
       }
+      if(node.entries&&node.entries.length){sections.push(parseEntries(node.entries,label||node.name||'Division'));}
     }
-    if(d.children) d.children.forEach(function(n){dig(n,n.name);});
-    else dig(d,'MLB Standings');
-    if(!sections.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No standings data available yet.');
+    (d.children||[d]).forEach(function(n){walk(n,n.name);});
+    if(!sections.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No data yet — standings may not be published for this date.');
     var cols=['W','L','PCT','GB','L10','STRK'];
     return cr('div',null,sections.map(function(sec,i){return cr(StandingsTable,{key:i,title:sec.title,entries:sec.entries,cols:cols});}));
   }
@@ -3493,37 +3489,29 @@ function StandingsV(){
   function NBAStandings(){
     var d=data.nba;
     if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading NBA standings...');
-    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing the tab.');
+    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing.');
     var MY_TEAMS={HOU:true};
     var NBA_OVR={UTA:'utah',NOP:'no',SAS:'sa',GS:'gs'};
-    function nbaLogo(abbr){return 'https://a.espncdn.com/i/teamlogos/nba/500/'+(NBA_OVR[abbr]||abbr.toLowerCase())+'.png';}
-    function parseConf(group){
-      var entries=(group.standings&&group.standings.entries)||(group.entries)||[];
-      return entries.map(function(e){
+    function logo(abbr){return 'https://a.espncdn.com/i/teamlogos/nba/500/'+(NBA_OVR[abbr]||abbr.toLowerCase())+'.png';}
+    function parseEntries(entries,title){
+      var rows=entries.map(function(e){
         var abbr=e.team&&e.team.abbreviation||'';
         var stats={};
         (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||String(s.value||'');});
-        return {
-          name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,
-          logo:nbaLogo(abbr),
-          myTeam:!!MY_TEAMS[abbr],
-          vals:[stats.W||'—',stats.L||'—',stats.PCT||stats.WP||'—',stats.GB||'—',stats.L10||'—',stats.STRK||'—']
-        };
-      }).filter(function(e){return e.name;});
+        return {name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,logo:logo(abbr),myTeam:!!MY_TEAMS[abbr],
+          vals:[stats.W||'—',stats.L||'—',stats.PCT||stats.WP||'—',stats.GB||'—',stats.L10||'—',stats.STRK||'—']};
+      }).filter(function(r){return r.name;});
+      return {title:title,entries:rows};
     }
     var sections=[];
-    function digNBA(node,name){
-      if(node.standings&&node.standings.entries&&node.standings.entries.length){
-        sections.push({title:name||node.name||'Conference',entries:parseConf(node)});
-      } else if(node.entries&&node.entries.length){
-        sections.push({title:name||node.name||'Conference',entries:parseConf(node)});
-      } else if(node.children){
-        node.children.forEach(function(child){digNBA(child,child.name);});
-      }
+    function walk(node,label){
+      var ents=node.standings&&node.standings.entries;
+      if(ents&&ents.length){sections.push(parseEntries(ents,label||node.name||'Conference'));return;}
+      if(node.children&&node.children.length){node.children.forEach(function(ch){walk(ch,ch.name);});return;}
+      if(node.entries&&node.entries.length){sections.push(parseEntries(node.entries,label||node.name||'Conference'));}
     }
-    if(d.children) d.children.forEach(function(n){digNBA(n,n.name);});
-    else digNBA(d,'NBA Standings');
-    if(!sections.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No standings data available yet.');
+    (d.children||[d]).forEach(function(n){walk(n,n.name);});
+    if(!sections.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No data yet.');
     var cols=['W','L','PCT','GB','L10','STRK'];
     return cr('div',null,sections.map(function(sec,i){return cr(StandingsTable,{key:i,title:sec.title,entries:sec.entries,cols:cols});}));
   }
@@ -3532,31 +3520,30 @@ function StandingsV(){
   function EPLStandings(){
     var d=data.epl;
     if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading Premier League table...');
-    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing the tab.');
-    var MY_TEAMS={'359':true};
-    function parseEPL(group){
-      var entries=(group.standings&&group.standings.entries)||(group.entries)||[];
-      return entries.map(function(e){
-        var id=e.team&&e.team.id||'';
-        var abbr=e.team&&e.team.abbreviation||'';
-        var stats={};
-        (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||String(s.value||'');});
-        return {
-          name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,
-          logo:'https://a.espncdn.com/i/teamlogos/soccer/500/'+id+'.png',
-          myTeam:!!MY_TEAMS[id],
-          vals:[stats.gp||stats.GP||'—',stats.W||'—',stats.D||'—',stats.L||'—',stats.gf||stats.GF||'—',stats.ga||stats.GA||'—',stats.gd||stats.GD||'—',stats.pts||stats.PTS||'—']
-        };
-      }).filter(function(e){return e.name;});
-    }
+    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing.');
+    var MY_IDS={'359':true};
+    function logo(id){return 'https://a.espncdn.com/i/teamlogos/soccer/500/'+id+'.png';}
     var entries=[];
-    function digEPL(node){
-      if(node.standings&&node.standings.entries&&node.standings.entries.length) entries=entries.concat(parseEPL(node));
-      else if(node.entries&&node.entries.length) entries=entries.concat(parseEPL(node));
-      else if(node.children) node.children.forEach(digEPL);
+    function walk(node){
+      var ents=node.standings&&node.standings.entries;
+      if(ents&&ents.length){
+        ents.forEach(function(e){
+          var id=e.team&&e.team.id||'';
+          var abbr=e.team&&e.team.abbreviation||'';
+          var stats={};
+          (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||String(s.value||'');});
+          entries.push({name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,
+            logo:logo(id),myTeam:!!MY_IDS[id],
+            vals:[stats.gp||stats.GP||'—',stats.W||'—',stats.D||'—',stats.L||'—',
+                  stats.gf||stats.GF||'—',stats.ga||stats.GA||'—',stats.gd||stats.GD||'—',stats.pts||stats.PTS||'—']});
+        });
+        return;
+      }
+      if(node.children) node.children.forEach(walk);
+      if(node.entries&&node.entries.length) node.entries.forEach(function(e){walk({standings:{entries:[e]}});});
     }
-    digEPL(d);
-    if(!entries.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No standings data yet.');
+    walk(d);
+    if(!entries.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No data yet.');
     return cr(StandingsTable,{title:'Premier League Table',entries:entries,cols:['GP','W','D','L','GF','GA','GD','PTS']});
   }
 
@@ -3667,6 +3654,129 @@ function StandingsV(){
 
   );
 }
+
+
+// ── SCREENSAVER / IDLE MODE ──────────────────────────────────────────────────
+(function(){
+  var IDLE_MS = 15 * 60 * 1000; // 15 minutes
+  var active = false;
+  var timer = null;
+  var overlay = null;
+
+  var SCENES = [
+    {url:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80',label:'Swiss Alps'},
+    {url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80',label:'Caribbean Beach'},
+    {url:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80',label:'Rocky Mountains'},
+    {url:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1920&q=80',label:'Maldives'},
+    {url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80',label:'Golden Forest'},
+    {url:'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1920&q=80',label:'Mountain Lake'},
+    {url:'https://images.unsplash.com/photo-1467803738586-46b7eb7b16a1?w=1920&q=80',label:'Scottish Castle'},
+    {url:'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80',label:'Coastal Cliffs'},
+  ];
+  var sceneIdx = 0;
+  var sceneTimer = null;
+
+  function buildOverlay() {
+    overlay = document.createElement('div');
+    overlay.id = 'ss-overlay';
+    overlay.style.cssText = [
+      'position:fixed','inset:0','z-index:99999',
+      'background:#000','display:flex','align-items:center',
+      'justify-content:center','flex-direction:column',
+      'cursor:none','transition:opacity 1s ease',
+    ].join(';');
+
+    var bgDiv = document.createElement('div');
+    bgDiv.id = 'ss-bg';
+    bgDiv.style.cssText = [
+      'position:absolute','inset:0','background-size:cover',
+      'background-position:center','transition:opacity 1.5s ease',
+    ].join(';');
+
+    var infoDiv = document.createElement('div');
+    infoDiv.id = 'ss-info';
+    infoDiv.style.cssText = [
+      'position:absolute','bottom:40px','left:50%',
+      'transform:translateX(-50%)',
+      'text-align:center','z-index:2','pointer-events:none',
+    ].join(';');
+    infoDiv.innerHTML = [
+      '<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px">LOCK IN</div>',
+      '<div id="ss-label" style="font-size:14px;color:rgba(255,255,255,0.7);letter-spacing:0.1em"></div>',
+      '<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px">Move mouse or press any key to wake</div>',
+    ].join('');
+
+    overlay.appendChild(bgDiv);
+    overlay.appendChild(infoDiv);
+    document.body.appendChild(overlay);
+  }
+
+  function setScene(idx) {
+    var scene = SCENES[idx % SCENES.length];
+    var bg = document.getElementById('ss-bg');
+    var label = document.getElementById('ss-label');
+    if (bg) { bg.style.opacity = '0'; }
+    setTimeout(function() {
+      if (bg) { bg.style.backgroundImage = 'url(' + scene.url + ')'; bg.style.opacity = '1'; }
+      if (label) label.textContent = scene.label;
+    }, 500);
+  }
+
+  function startScreensaver() {
+    if (active) return;
+    active = true;
+    if (!overlay) buildOverlay();
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '0';
+    setTimeout(function() { overlay.style.opacity = '1'; }, 50);
+    sceneIdx = 0;
+    setScene(sceneIdx);
+    sceneTimer = setInterval(function() {
+      sceneIdx = (sceneIdx + 1) % SCENES.length;
+      setScene(sceneIdx);
+    }, 12000); // rotate every 12 seconds
+    // Go fullscreen if available
+    try {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(function(){});
+      }
+    } catch(e) {}
+  }
+
+  function stopScreensaver() {
+    if (!active) return;
+    active = false;
+    if (overlay) { overlay.style.opacity = '0'; setTimeout(function() { if(overlay) overlay.style.display = 'none'; }, 1000); }
+    if (sceneTimer) { clearInterval(sceneTimer); sceneTimer = null; }
+    // Exit fullscreen
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(function(){});
+      }
+    } catch(e) {}
+  }
+
+  function resetTimer() {
+    if (active) stopScreensaver();
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(startScreensaver, IDLE_MS);
+  }
+
+  // Start the timer once DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    resetTimer();
+    ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(function(evt) {
+      document.addEventListener(evt, resetTimer, { passive: true });
+    });
+    // Also listen for overlay click/move to dismiss
+    document.addEventListener('click', function(e) {
+      if (active) { e.stopPropagation(); stopScreensaver(); resetTimer(); }
+    }, true);
+    document.addEventListener('keydown', function() {
+      if (active) { stopScreensaver(); resetTimer(); }
+    }, true);
+  });
+})();
 
 ReactDOM.render(cr(App,null),document.getElementById('root'));
 </script>
