@@ -3389,23 +3389,35 @@ function StandingsV(){
 
   // Generic ESPN standings fetcher
   function fetchStandings(key,url){
-    if(data[key]||loading[key]) return;
+    if(loading[key]) return; // already in flight
+    if(data[key]) return;    // already loaded
     sLoading(function(l){return Object.assign({},l,{[key]:true});});
-    fetch(url).then(function(r){return r.json();}).then(function(d){
-      sData(function(prev){return Object.assign({},prev,{[key]:d});});
-      sLoading(function(l){return Object.assign({},l,{[key]:false});});
-    }).catch(function(){sLoading(function(l){return Object.assign({},l,{[key]:false});});});
+    fetch(url)
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      })
+      .then(function(d){
+        sData(function(prev){return Object.assign({},prev,{[key]:d});});
+        sLoading(function(l){return Object.assign({},l,{[key]:false});});
+      })
+      .catch(function(e){
+        console.warn('[Standings] '+key+' failed:',e.message);
+        sLoading(function(l){return Object.assign({},l,{[key]:false});});
+        // Mark as error so UI shows message
+        sData(function(prev){return Object.assign({},prev,{[key]:{_error:true}});});
+      });
   }
 
   // Fetch on tab switch
   uE(function(){
-    if(activeTab==='mlb') fetchStandings('mlb','https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings?seasontype=2');
-    if(activeTab==='nba') fetchStandings('nba','https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?seasontype=2');
-    if(activeTab==='epl') fetchStandings('epl','https://site.api.espn.com/apis/v2/sports/soccer/eng.1/standings?seasontype=2');
+    if(activeTab==='mlb') fetchStandings('mlb','https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/standings');
+    if(activeTab==='nba') fetchStandings('nba','https://site.api.espn.com/apis/site/v2/sports/basketball/nba/standings');
+    if(activeTab==='epl') fetchStandings('epl','https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/standings');
     if(activeTab==='cbsb') fetchStandings('cbsb','https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/rankings');
     if(activeTab==='cbb') fetchStandings('cbb','https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/rankings');
     if(activeTab==='cfb') fetchStandings('cfb','https://site.api.espn.com/apis/site/v2/sports/football/college-football/rankings');
-    if(activeTab==='mlb_leaders') fetchStandings('mlb_hit','https://site.api.espn.com/apis/v2/sports/baseball/mlb/leaders?limit=10&seasontype=2');
+    if(activeTab==='mlb_leaders') fetchStandings('mlb_hit','https://corsproxy.io/?url='+encodeURIComponent('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/leaders?seasontype=2&limit=10'));
   },[activeTab]);
 
   var tabStyle=function(t){return {padding:'6px 12px',background:activeTab===t?T.or:'none',color:activeTab===t?'#fff':T.se,border:'none',borderRadius:6,fontSize:11,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'};};
@@ -3442,30 +3454,37 @@ function StandingsV(){
   function MLBStandings(){
     var d=data.mlb;
     if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading MLB standings...');
+    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing the tab.');
     var MY_TEAMS={HOU:true};
     var MLB_OVR_LOGO={ATH:'oak',CWS:'cws',KC:'kc',TB:'tb',WSH:'wsh',SD:'sd',SF:'sf'};
     function mlbLogo(abbr){return 'https://a.espncdn.com/i/teamlogos/mlb/500/'+(MLB_OVR_LOGO[abbr]||abbr.toLowerCase())+'.png';}
     function parseDiv(group){
-      var entries=(group.standings&&group.standings.entries)||[];
+      var entries=(group.standings&&group.standings.entries)||(group.entries)||[];
       return entries.map(function(e){
         var abbr=e.team&&e.team.abbreviation||'';
         var stats={};
-        (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||s.value;});
+        (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||String(s.value||'');});
         return {
-          name:e.team&&e.team.shortDisplayName||abbr,
+          name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,
           logo:mlbLogo(abbr),
           myTeam:!!MY_TEAMS[abbr],
-          vals:[stats.W||'—',stats.L||'—',stats.PCT||stats.WP||'—',stats.GB||'—',stats.L10||stats['L10']||'—',stats.STRK||stats.streak||'—']
+          vals:[stats.W||'—',stats.L||'—',stats.PCT||stats.WP||'—',stats.GB||'—',stats.L10||'—',stats.STRK||stats.streak||'—']
         };
-      });
+      }).filter(function(e){return e.name;});
     }
     var sections=[];
-    (d.children||[]).forEach(function(league){
-      (league.children||[]).forEach(function(div){
-        sections.push({title:(league.name||'')+(div.name?' · '+div.name:''),entries:parseDiv(div)});
-      });
-    });
-    if(!sections.length&&d.standings){sections=[{title:'MLB Standings',entries:parseDiv(d)}];}
+    function dig(node,parentName){
+      if(node.standings&&node.standings.entries&&node.standings.entries.length){
+        sections.push({title:parentName||node.name||'Division',entries:parseDiv(node)});
+      } else if(node.children){
+        node.children.forEach(function(child){dig(child,(node.name?node.name+' · ':'')+child.name);});
+      } else if(node.entries){
+        sections.push({title:parentName||node.name||'Division',entries:parseDiv(node)});
+      }
+    }
+    if(d.children) d.children.forEach(function(n){dig(n,n.name);});
+    else dig(d,'MLB Standings');
+    if(!sections.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No standings data available yet.');
     var cols=['W','L','PCT','GB','L10','STRK'];
     return cr('div',null,sections.map(function(sec,i){return cr(StandingsTable,{key:i,title:sec.title,entries:sec.entries,cols:cols});}));
   }
@@ -3474,28 +3493,37 @@ function StandingsV(){
   function NBAStandings(){
     var d=data.nba;
     if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading NBA standings...');
+    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing the tab.');
     var MY_TEAMS={HOU:true};
     var NBA_OVR={UTA:'utah',NOP:'no',SAS:'sa',GS:'gs'};
     function nbaLogo(abbr){return 'https://a.espncdn.com/i/teamlogos/nba/500/'+(NBA_OVR[abbr]||abbr.toLowerCase())+'.png';}
     function parseConf(group){
-      var entries=(group.standings&&group.standings.entries)||[];
+      var entries=(group.standings&&group.standings.entries)||(group.entries)||[];
       return entries.map(function(e){
         var abbr=e.team&&e.team.abbreviation||'';
         var stats={};
         (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||String(s.value||'');});
         return {
-          name:e.team&&e.team.shortDisplayName||abbr,
+          name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,
           logo:nbaLogo(abbr),
           myTeam:!!MY_TEAMS[abbr],
           vals:[stats.W||'—',stats.L||'—',stats.PCT||stats.WP||'—',stats.GB||'—',stats.L10||'—',stats.STRK||'—']
         };
-      });
+      }).filter(function(e){return e.name;});
     }
     var sections=[];
-    (d.children||[]).forEach(function(conf){
-      sections.push({title:conf.name||'Conference',entries:parseConf(conf)});
-    });
-    if(!sections.length) sections=[{title:'NBA Standings',entries:parseConf(d)}];
+    function digNBA(node,name){
+      if(node.standings&&node.standings.entries&&node.standings.entries.length){
+        sections.push({title:name||node.name||'Conference',entries:parseConf(node)});
+      } else if(node.entries&&node.entries.length){
+        sections.push({title:name||node.name||'Conference',entries:parseConf(node)});
+      } else if(node.children){
+        node.children.forEach(function(child){digNBA(child,child.name);});
+      }
+    }
+    if(d.children) d.children.forEach(function(n){digNBA(n,n.name);});
+    else digNBA(d,'NBA Standings');
+    if(!sections.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No standings data available yet.');
     var cols=['W','L','PCT','GB','L10','STRK'];
     return cr('div',null,sections.map(function(sec,i){return cr(StandingsTable,{key:i,title:sec.title,entries:sec.entries,cols:cols});}));
   }
@@ -3504,25 +3532,31 @@ function StandingsV(){
   function EPLStandings(){
     var d=data.epl;
     if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading Premier League table...');
+    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'Failed to load — try refreshing the tab.');
     var MY_TEAMS={'359':true};
     function parseEPL(group){
-      var entries=(group.standings&&group.standings.entries)||[];
+      var entries=(group.standings&&group.standings.entries)||(group.entries)||[];
       return entries.map(function(e){
         var id=e.team&&e.team.id||'';
         var abbr=e.team&&e.team.abbreviation||'';
         var stats={};
         (e.stats||[]).forEach(function(s){stats[s.abbreviation||s.name]=s.displayValue||String(s.value||'');});
         return {
-          name:e.team&&e.team.shortDisplayName||abbr,
+          name:e.team&&(e.team.shortDisplayName||e.team.displayName||abbr)||abbr,
           logo:'https://a.espncdn.com/i/teamlogos/soccer/500/'+id+'.png',
           myTeam:!!MY_TEAMS[id],
           vals:[stats.gp||stats.GP||'—',stats.W||'—',stats.D||'—',stats.L||'—',stats.gf||stats.GF||'—',stats.ga||stats.GA||'—',stats.gd||stats.GD||'—',stats.pts||stats.PTS||'—']
         };
-      });
+      }).filter(function(e){return e.name;});
     }
     var entries=[];
-    (d.children||[]).forEach(function(g){entries=entries.concat(parseEPL(g));});
-    if(!entries.length) entries=parseEPL(d);
+    function digEPL(node){
+      if(node.standings&&node.standings.entries&&node.standings.entries.length) entries=entries.concat(parseEPL(node));
+      else if(node.entries&&node.entries.length) entries=entries.concat(parseEPL(node));
+      else if(node.children) node.children.forEach(digEPL);
+    }
+    digEPL(d);
+    if(!entries.length) return cr('div',{style:{color:'#555',padding:'1rem',fontSize:12}},'No standings data yet.');
     return cr(StandingsTable,{title:'Premier League Table',entries:entries,cols:['GP','W','D','L','GF','GA','GD','PTS']});
   }
 
@@ -3564,7 +3598,8 @@ function StandingsV(){
   // ── MLB STAT LEADERS ────────────────────────────────────────────────────────
   function MLBLeaders(){
     var d=data.mlb_hit;
-    if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading MLB leaders...');
+    if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading MLB stat leaders...');
+    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'MLB stat leaders failed to load.');
 
     // ESPN leaders endpoint returns categories
     var cats=d.leaders||[];
