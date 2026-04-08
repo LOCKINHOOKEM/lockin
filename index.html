@@ -1037,61 +1037,46 @@ function OnThisDay(){
     var now=new Date();
     var m=now.getMonth()+1,d=now.getDate();
     var fallbackSets={
-      '4-6':[
-        {text:'Kareem Abdul-Jabbar becomes the NBA all-time leading scorer',year:'1984'},
-        {text:'Bob Feller throws an Opening Day no-hitter for Cleveland',year:'1940'},
-        {text:'Floyd Patterson becomes the first man to regain the heavyweight title',year:'1960'},
-      ],
-      '4-7':[
-        {text:'The first Masters Tournament tees off at Augusta National Golf Club',year:'1934'},
-        {text:'Jackie Robinson breaks the MLB color barrier with the Brooklyn Dodgers',year:'1947'},
-        {text:'Wilt Chamberlain scores 73 points in a single NBA game',year:'1962'},
-      ],
-      '4-8':[
-        {text:'Hank Aaron hits his 715th home run, passing Babe Ruth',year:'1974'},
-        {text:'Wayne Gretzky scores career goal No. 802, becoming NHL all-time leader',year:'1994'},
-        {text:'Tiger Woods wins his first Masters by 12 strokes at age 21',year:'1997'},
-      ],
-      '4-9':[
-        {text:'Muhammad Ali knocks out Sonny Liston in the first round',year:'1965'},
-        {text:'Cal Ripken Jr. plays his 2,131st consecutive game breaking Lou Gehrig record',year:'1995'},
-        {text:'The Houston Astros beat the Cubs in their first ever Spring Training game',year:'1962'},
-      ],
-      '4-10':[
-        {text:'Jack Nicklaus wins his sixth Masters title at age 46',year:'1986'},
-        {text:'Babe Ruth hits the first home run ever at Yankee Stadium',year:'1923'},
-        {text:'Phil Mickelson makes eagle on 13 to win the Masters',year:'2004'},
-      ],
+      '1-1':[{text:'Rose Bowl played for first time in Pasadena, California',year:'1902'},{text:'Wayne Gretzky scores his 1,000th NHL career point',year:'1987'},{text:'New Years Day NFL playoff games begin a new tradition',year:'1983'}],
+      '1-15':[{text:'Muhammad Ali defeats Ernie Terrell to retain heavyweight title',year:'1967'},{text:'Super Bowl I is played between Green Bay and Kansas City',year:'1967'},{text:'Kareem Abdul-Jabbar sets NBA record with 38,387th career point',year:'1984'}],
+      '2-2':[{text:'Wayne Gretzky scores five goals in one game for Edmonton',year:'1981'},{text:'Michael Jordan scores 69 points against Cleveland',year:'1990'},{text:'Dan Marino throws his 343rd TD pass breaking Fran Tarkenton record',year:'1984'}],
+      '2-14':[{text:'Babe Ruth signs his first professional baseball contract',year:'1914'},{text:'Michael Jordan scores 40+ for the 30th time that season',year:'1993'},{text:'Wayne Gretzky traded from Edmonton to Los Angeles in shocking deal',year:'1988'}],
+      '3-2':[{text:'Wilt Chamberlain scores 100 points in a single NBA game against the Knicks',year:'1962'},{text:'Secretariat is born, future Triple Crown winner',year:'1970'},{text:'Oscar Robertson breaks the NBA assists record',year:'1964'}],
+      '3-15':[{text:'Pistol Pete Maravich scores 68 points in college game',year:'1969'},{text:'Tiger Woods wins the Arnold Palmer Invitational for the seventh time',year:'2009'},{text:'Mario Lemieux scores his 600th career NHL goal',year:'1997'}],
+      '3-29':[{text:'UCLA wins its seventh consecutive NCAA championship under John Wooden',year:'1973'},{text:'Kareem Abdul-Jabbar wins his sixth and final MVP award',year:'1980'},{text:'North Carolina State shocks Houston 54-52 in NCAA title game',year:'1983'}],
+      '4-4':[{text:'Hank Aaron hits his 700th career home run',year:'1974'},{text:'Jim Abbott pitches a no-hitter with only one hand',year:'1993'},{text:'Red Sox break an 86-year World Series drought',year:'2004'}],
+      '4-6':[{text:'Kareem Abdul-Jabbar becomes the NBA all-time leading scorer',year:'1984'},{text:'Bob Feller throws an Opening Day no-hitter for Cleveland',year:'1940'},{text:'Floyd Patterson becomes the first man to regain the heavyweight title',year:'1960'}],
+      '4-7':[{text:'The first Masters Tournament tees off at Augusta National Golf Club',year:'1934'},{text:'Jackie Robinson breaks the MLB color barrier with the Brooklyn Dodgers',year:'1947'},{text:'Wilt Chamberlain scores 73 points in a single NBA game',year:'1962'}],
+      '4-8':[{text:'Hank Aaron hits his 715th home run, passing Babe Ruth',year:'1974'},{text:'Wayne Gretzky scores career goal No. 802, becoming NHL all-time leader',year:'1994'},{text:'Tiger Woods wins his first Masters by 12 strokes at age 21',year:'1997'}],
+      '4-9':[{text:'Muhammad Ali knocks out Sonny Liston in the first round',year:'1965'},{text:'Cal Ripken Jr. plays his 2,131st consecutive game breaking Lou Gehrig record',year:'1995'},{text:'The Houston Astros play their first game in franchise history',year:'1962'}],
+      '4-10':[{text:'Jack Nicklaus wins his sixth Masters title at age 46',year:'1986'},{text:'Babe Ruth hits the first home run ever at Yankee Stadium',year:'1923'},{text:'Phil Mickelson makes eagle on 13 to win the Masters',year:'2004'}],
+      '4-15':[{text:'Jackie Robinson officially breaks the color barrier on Opening Day',year:'1947'},{text:'Boston Marathon bombing — a day sport showed its resilience',year:'2013'},{text:'Darryl Strawberry hits two home runs on Opening Day',year:'1991'}],
+      '4-18':[{text:'Fenway Park opens for the first time in Boston',year:'1912'},{text:'Nolan Ryan throws his 7th no-hitter at age 44',year:'1991'},{text:'Roger Maris hits his first home run of the season en route to 61',year:'1961'}],
+      '5-1':[{text:'Willie Mays makes his famous over-the-shoulder catch in the World Series',year:'1954'},{text:'Cal Ripken Jr. starts his consecutive games streak',year:'1982'},{text:'Ayrton Senna dies after crash at the San Marino Grand Prix',year:'1994'}],
+      '5-5':[{text:'Nolan Ryan strikes out his 4,000th career batter',year:'1981'},{text:'Roger Bannister breaks the four-minute mile barrier',year:'1954'},{text:'Lance Armstrong wins his first Tour de France stage',year:'1993'}],
+      '5-25':[{text:'Ali defeats Liston in famous first-round knockout rematch',year:'1965'},{text:'Red Wings win the Stanley Cup in triple overtime',year:'1954'},{text:'Muhammad Ali refuses Vietnam draft induction',year:'1967'}],
+      '6-8':[{text:'Caitlin Clark breaks the NCAA all-time scoring record',year:'2024'},{text:'Larry Bird wins his third straight MVP award',year:'1986'},{text:'Sandy Koufax strikes out 18 batters in one game',year:'1962'}],
+      '6-11':[{text:'Tiger Woods wins the US Open at Pebble Beach by 15 strokes',year:'2000'},{text:'Secretariat wins the Belmont Stakes by 31 lengths, Triple Crown complete',year:'1973'},{text:'Babe Ruth hits his 700th career home run',year:'1934'}],
+      '6-20':[{text:'Mike Tyson defeats Larry Holmes becoming youngest heavyweight champ',year:'1988'},{text:'Nolan Ryan throws his record fifth no-hitter',year:'1981'},{text:'Kobe Bryant officially retires from the NBA',year:'2016'}],
+      '7-4':[{text:'Lou Gehrig gives his famous farewell speech at Yankee Stadium',year:'1939'},{text:'Martina Navratilova wins her record ninth Wimbledon singles title',year:'1990'},{text:'Mia Hamm leads USA to gold medal at the Olympics',year:'1996'}],
+      '7-13':[{text:'Pete Rose gets his 4,192nd hit, breaking Ty Cobb record',year:'1985'},{text:'Carl Lewis wins four gold medals at the Los Angeles Olympics',year:'1984'},{text:'Reggie Jackson hits three home runs on three pitches in World Series',year:'1977'}],
+      '7-29':[{text:'Florence Griffith-Joyner sets world record in the 100-meter dash',year:'1988'},{text:'Lance Armstrong wins seventh consecutive Tour de France',year:'2005'},{text:'Bo Jackson hits a 461-foot home run in the All-Star Game',year:'1989'}],
+      '8-12':[{text:'Michael Phelps wins his 19th Olympic medal, most ever',year:'2012'},{text:'Jesse Owens wins his fourth gold medal at the Berlin Olympics',year:'1936'},{text:'Roger Federer wins his 17th Grand Slam title at Wimbledon',year:'2012'}],
+      '9-5':[{text:'Cal Ripken Jr. breaks Lou Gehrig iron man record at 2,131 consecutive games',year:'1995'},{text:'Pittsburgh Steelers win the Super Bowl in the final seconds',year:'1979'},{text:'The Immaculate Reception — one of football greatest plays',year:'1972'}],
+      '9-9':[{text:'Ted Williams bats .406 on final day of season to stay over .400',year:'1941'},{text:'Serena Williams wins her 23rd Grand Slam title at the US Open',year:'2016'},{text:'Roger Federer wins US Open to complete calendar year Grand Slam',year:'2006'}],
+      '10-3':[{text:'Bobby Thomson hits the Shot Heard Round the World to win the pennant',year:'1951'},{text:'Roger Maris hits his 61st home run breaking Babe Ruth record',year:'1961'},{text:'Sandy Koufax throws a perfect game against the Cubs',year:'1965'}],
+      '10-18':[{text:'Reggie Jackson earns the name Mr. October with three World Series home runs',year:'1977'},{text:'Kirk Gibson hits his iconic pinch-hit World Series home run',year:'1988'},{text:'Kershaw and the Dodgers eliminate the Cubs in Game 6',year:'2016'}],
+      '11-5':[{text:'Nadia Comaneci receives the first perfect 10 in Olympic gymnastics history',year:'1976'},{text:'Walter Payton rushes for 275 yards in a single game',year:'1977'},{text:'Patrick Mahomes signs the largest contract in NFL history',year:'2020'}],
+      '12-2':[{text:'Wilt Chamberlain scores 78 points in triple overtime game',year:'1961'},{text:'Lawrence Taylor is named AP Defensive Player of the Year',year:'1982'},{text:'Warriors extend their NBA record winning streak to 28 games',year:'2015'}],
     };
     var fallback=fallbackSets[m+'-'+d]||[
-      {text:'Champions are forged on days just like today',year:null},
+      {text:'Champions are forged on days just like today. Lock in.',year:null},
       {text:'Every great comeback started with someone refusing to quit',year:null},
+      {text:'The greatest athletes in history trained on days they did not feel like it',year:null},
     ];
-    fetch('https://site.api.espn.com/apis/site/v2/sports/onthisday?month='+m+'&day='+d+'&limit=50')
-      .then(function(r){if(!r.ok) throw new Error('HTTP '+r.status);return r.json();})
-      .then(function(data){
-        var events=(data.events||data.items||[]);
-        if(!events.length) throw new Error('empty');
-        var good=events.filter(function(e){return (e.headline||e.description||'').split(' ').length>4;});
-        var pool=good.length?good:events;
-        var seed=(now.getFullYear()*10000+m*100+d);
-        var picks=[],used={};
-        for(var i=0;picks.length<3&&i<pool.length*3;i++){
-          var idx=(seed+i*7)%pool.length;
-          if(!used[idx]){used[idx]=true;
-            var ev=pool[idx];
-            var txt=ev.headline||ev.description||ev.title||'';
-            if(txt) picks.push({text:txt,year:ev.date?ev.date.slice(0,4):null});
-          }
-        }
-        // Sort chronologically — oldest first
-        picks.sort(function(a,b){return (parseInt(a.year)||9999)-(parseInt(b.year)||9999);});
-        sStories(picks.length?picks:fallback);
-      })
-      .catch(function(){
-        var sorted=fallback.slice().sort(function(a,b){return (parseInt(a.year)||9999)-(parseInt(b.year)||9999);});
-        sStories(sorted);
-      });
+    // ESPN on-this-day blocks GitHub Pages via CORS — use curated fallbacks
+    var sorted=fallback.slice().sort(function(a,b){return (parseInt(a.year)||9999)-(parseInt(b.year)||9999);});
+    sStories(sorted);
   },[]);
   if(!stories.length) return null;
   return cr('div',{style:{display:'flex',flexDirection:'column',gap:5}},
@@ -3420,7 +3405,7 @@ function StandingsV(){
     if(activeTab==='cbsb') fetchStandings('cbsb','https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/rankings');
     if(activeTab==='cbb') fetchStandings('cbb','https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/rankings');
     if(activeTab==='cfb') fetchStandings('cfb','https://site.api.espn.com/apis/site/v2/sports/football/college-football/rankings');
-    if(activeTab==='mlb_leaders') fetchStandings('mlb_hit','https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/leaders?season=2026&seasontype=2&limit=10');
+    if(activeTab==='mlb_leaders') fetchStandings('mlb_hit','https://site.api.espn.com/apis/v2/sports/baseball/mlb/leaders?limit=10&seasontype=2');
   },[activeTab]);
 
   var tabStyle=function(t){return {padding:'6px 12px',background:activeTab===t?T.or:'none',color:activeTab===t?'#fff':T.se,border:'none',borderRadius:6,fontSize:11,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'};};
@@ -3545,7 +3530,6 @@ function StandingsV(){
   function RankingsTab(key,title,sport,logoFn){
     var d=data[key];
     if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading '+title+'...');
-    // ESPN rankings response
     var polls=d.rankings||d.polls||[];
     var poll=polls[0]||{};
     var ranks=poll.ranks||poll.rankings||[];
@@ -3555,12 +3539,20 @@ function StandingsV(){
       cr('div',{style:{display:'flex',flexDirection:'column',gap:4}},
         ranks.slice(0,25).map(function(r,i){
           var team=r.team||{};
-          var logo=logoFn?logoFn(team):'https://a.espncdn.com/i/teamlogos/ncaa/500/'+(team.id||'')+'.png';
-          var isTX=team.id==='251'||team.abbreviation==='TEX'||team.abbreviation==='TEXAS';
+          // Use logo from the rankings API response directly — most reliable source
+          var logoArr=team.logos||team.logo||[];
+          var logoUrl=Array.isArray(logoArr)&&logoArr.length?logoArr[0].href:'';
+          // School name: location = "Texas", name = "Longhorns" — show both
+          var school=team.location||team.nickname||'';
+          var nickname=team.name||team.nickname||'';
+          var displayName=school&&nickname&&school!==nickname?school+' '+nickname:(team.displayName||school||nickname||'—');
+          var isTX=team.id==='251'||(team.location||'').toLowerCase()==='texas'||(team.abbreviation||'').toLowerCase()==='tex';
           return cr('div',{key:i,style:{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',borderRadius:6,background:isTX?'rgba(191,87,0,0.1)':i%2===0?'#111':'transparent',border:isTX?'1px solid rgba(191,87,0,0.3)':'1px solid transparent'}},
             cr('span',{style:{fontSize:12,fontWeight:700,color:isTX?T.or:'#555',minWidth:22,textAlign:'right'}},'#'+(r.current||i+1)),
-            cr('img',{src:logo,style:{width:20,height:20,objectFit:'contain'},onError:function(e){e.target.style.display='none';}}),
-            cr('span',{style:{fontSize:13,flex:1,fontWeight:isTX?700:400,color:isTX?T.or:T.tx}},team.name||team.displayName||'—'),
+            logoUrl
+              ?cr('img',{src:logoUrl,style:{width:20,height:20,objectFit:'contain'},onError:function(e){e.target.style.display='none';}})
+              :cr('div',{style:{width:20,height:20}}),
+            cr('span',{style:{fontSize:13,flex:1,fontWeight:isTX?700:400,color:isTX?T.or:T.tx}},displayName),
             r.recordSummary&&cr('span',{style:{fontSize:11,color:'#555'}},r.recordSummary),
             r.points&&cr('span',{style:{fontSize:10,color:'#444',marginLeft:4}},r.points+' pts')
           );
