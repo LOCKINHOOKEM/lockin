@@ -2078,6 +2078,33 @@ function App(){
       ss('li_wkt_apr7','1');
       dbSave(h,w,t);
     }
+    if(!sg('li_wkt_apr8')){
+      var apr8wkt={
+        id:'wkt_20260408',date:'2026-04-08',type:'gym',
+        exercises:[
+          {name:'Treadmill Warmup',sets:[{r:'5.5 min',w:'3.5 mph',n:'15→10→5→0 incline · 0.35mi'}]},
+          {name:'Back Extension Machine',sets:[{r:12,w:150,n:''},{r:12,w:150,n:''}]},
+          {name:'Seated Tricep Dips Machine',sets:[{r:10,w:165,n:''},{r:10,w:165,n:''}]},
+          {name:'Shoulder Raises',sets:[{r:12,w:'bodyweight',n:''},{r:12,w:'bodyweight',n:''}]},
+          {name:'Barbell Bicep Curls',sets:[{r:10,w:55,n:''},{r:10,w:55,n:''}]},
+          {name:'Barbell Flat Bench Press',sets:[{r:15,w:95,n:''},{r:10,w:115,n:''},{r:10,w:125,n:''}]},
+          {name:'Seated Overhead DB Skull Crushers',sets:[{r:10,w:30,n:''},{r:10,w:30,n:''},{r:10,w:30,n:''}]},
+          {name:'Seated Chest Press Machine',sets:[{r:10,w:60,n:''},{r:10,w:70,n:''},{r:10,w:70,n:''}]},
+          {name:'Isolated Chest Press Machine',sets:[{r:10,w:70,n:''},{r:10,w:90,n:''},{r:10,w:90,n:''}]},
+          {name:'Tricep Extension Machine',sets:[{r:8,w:80,n:''},{r:10,w:70,n:''},{r:10,w:70,n:''}]},
+          {name:'Skullcrusher Machine',sets:[{r:8,w:40,n:''},{r:10,w:30,n:''},{r:10,w:30,n:''}]},
+          {name:'Hack Squat Machine',sets:[{r:10,w:90,n:''},{r:10,w:140,n:''},{r:10,w:180,n:''}]},
+          {name:'Lunges',sets:[{r:'12 down / 12 back',w:'15 ea hand',n:''},{r:'12 down / 12 back',w:'15 ea hand',n:''}]},
+          {name:'Standing RDL Dumbbells',sets:[{r:10,w:35,n:''},{r:10,w:35,n:''}]},
+          {name:'Crunches',sets:[{r:15,w:'bodyweight',n:''},{r:15,w:'bodyweight',n:''}]},
+        ]
+      };
+      var hasApr8=w.some(function(x){return x.id==='wkt_20260408';});
+      if(!hasApr8) w=[apr8wkt].concat(w);
+      h['2026-04-08']=Object.assign({},h['2026-04-08']||{},{workout:true,stretch:true});
+      ss('li_wkt_apr8','1');
+      dbSave(h,w,t);
+    }
     if(!sg('li_nyt_seeded')){
       var nd=new Date();nd.setHours(12,0,0,0);
       var nytCount=0;
