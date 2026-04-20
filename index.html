@@ -1490,426 +1490,7 @@ var OCC={
   MAN:'#FFCC00',LEV:'#E32221',SOU:'#D71920',SCP:'#006600',BET:'#00A650',
 };
 
-var HOU_RKT='Toyota Center, Houston TX';
-var HOU_AST='Minute Maid Park, Houston TX';
-var EMI='Emirates Stadium, London';
 
-function rkt(dt,op,ab,oc,hm,su,st){return{dt:dt,t:'Rockets',op:op,ab:ab,orc:'',oc:oc,hm:hm,lc:hm?HOU_RKT:op,sc:[su,st],r:su>st?'W':'L',lg:'NBA'};}
-function rktF(dt,op,ab,oc,hm,tm){return{dt:dt,t:'Rockets',op:op,ab:ab,orc:'',oc:oc,hm:hm,lc:hm?HOU_RKT:op,tm:tm,lg:'NBA'};}
-function ast(dt,op,ab,oc,hm,su,st){return{dt:dt,t:'Astros',op:op,ab:ab,orc:'',oc:oc,hm:hm,lc:hm?HOU_AST:op,sc:[su,st],r:su>st?'W':'L',lg:'MLB'};}
-function astF(dt,op,ab,oc,hm,tm){return{dt:dt,t:'Astros',op:op,ab:ab,orc:'',oc:oc,hm:hm,lc:hm?HOU_AST:op,tm:tm,lg:'MLB'};}
-function ars(dt,op,ab,hm,su,st,comp,ov){return{dt:dt,t:'Arsenal',op:op,ab:ab,orc:'',oc:OCC[ab]||'#555',hm:hm,lc:hm?EMI:'Away',sc:[su,st],r:ov||(su>st?'W':su<st?'L':'D'),lg:comp};}
-function arsF(dt,op,ab,hm,tm,comp){return{dt:dt,t:'Arsenal',op:op,ab:ab,orc:'',oc:OCC[ab]||'#555',hm:hm,lc:hm?EMI:'Away',tm:tm,lg:comp};}
-
-var SP=[
-// ── ROCKETS 2025-26 ──────────────────────────────────────────────────────────
-rkt('2025-10-21','Oklahoma City','OKC','#007AC1',false,124,125),
-rkt('2025-10-24','Detroit','DET','#C8102E',true,111,115),
-rkt('2025-10-27','Brooklyn','BKN','#000000',true,137,109),
-rkt('2025-10-29','Toronto','TOR','#CE1141',false,139,121),
-rkt('2025-11-01','Boston','BOS','#007A33',false,128,101),
-rkt('2025-11-03','Dallas','DAL','#00538C',true,110,102),
-rkt('2025-11-05','Memphis','MEM','#5D76A9',false,124,109),
-rkt('2025-11-07','San Antonio','SAS','#061922',false,110,121),
-rkt('2025-11-09','Milwaukee','MIL','#00471B',false,122,115),
-rkt('2025-11-12','Washington','WAS','#002B5C',true,135,112),
-rkt('2025-11-14','Portland','POR','#E03A3E',true,140,116),
-rkt('2025-11-16','Orlando','ORL','#0077C0',true,117,113),
-rkt('2025-11-19','Cleveland','CLE','#860038',false,114,104),
-rkt('2025-11-21','Denver','DEN','#0E2240',true,109,112),
-rkt('2025-11-24','Phoenix','PHX','#1D1160',false,114,92),
-rkt('2025-11-26','Golden State','GSW','#1D428A',false,104,100),
-rkt('2025-11-30','Utah','UTA','#002B5C',false,129,101),
-rkt('2025-12-01','Utah','UTA','#002B5C',false,125,133),
-rkt('2025-12-03','Sacramento','SAC','#5A2D81',true,121,95),
-rkt('2025-12-05','Phoenix','PHX','#1D1160',true,117,98),
-rkt('2025-12-06','Dallas','DAL','#00538C',false,109,122),
-rkt('2025-12-11','LA Clippers','LAC','#C8102E',true,115,113),
-rkt('2025-12-15','Denver','DEN','#0E2240',false,125,128),
-rkt('2025-12-18','New Orleans','NOP','#0C2340',false,128,133),
-rkt('2025-12-20','Denver','DEN','#0E2240',false,115,101),
-rkt('2025-12-21','Sacramento','SAC','#5A2D81',false,124,125),
-rkt('2025-12-23','LA Clippers','LAC','#C8102E',false,108,128),
-rkt('2025-12-25','LA Lakers','LAL','#552583',false,119,96),
-rkt('2025-12-27','Cleveland','CLE','#860038',true,117,100),
-rkt('2025-12-29','Indiana','IND','#002D62',true,126,119),
-rkt('2026-01-01','Brooklyn','BKN','#000000',false,120,96),
-rkt('2026-01-03','Dallas','DAL','#00538C',false,104,110),
-rkt('2026-01-05','Phoenix','PHX','#1D1160',true,100,97),
-rkt('2026-01-07','Portland','POR','#E03A3E',false,102,103),
-rkt('2026-01-09','Portland','POR','#E03A3E',false,105,111),
-rkt('2026-01-11','Sacramento','SAC','#5A2D81',false,98,111),
-rkt('2026-01-13','Chicago','CHI','#CE1141',true,119,113),
-rkt('2026-01-15','Oklahoma City','OKC','#007AC1',true,91,111),
-rkt('2026-01-16','Minnesota','MIN','#0C2340',true,110,105),
-rkt('2026-01-18','New Orleans','NOP','#0C2340',true,119,110),
-rkt('2026-01-20','San Antonio','SAS','#061922',true,111,106),
-rkt('2026-01-22','Philadelphia','PHI','#006BB6',false,122,128),
-rkt('2026-01-23','Detroit','DET','#C8102E',false,111,104),
-rkt('2026-01-26','Memphis','MEM','#5D76A9',true,108,99),
-rkt('2026-01-28','San Antonio','SAS','#061922',true,99,111),
-rkt('2026-01-29','Atlanta','ATL','#E03A3E',false,104,86),
-rkt('2026-01-31','Dallas','DAL','#00538C',true,111,107),
-rkt('2026-02-02','Indiana','IND','#002D62',false,118,114),
-rkt('2026-02-04','Boston','BOS','#007A33',true,93,114),
-rkt('2026-02-05','Charlotte','CHA','#1D1160',true,99,109),
-rkt('2026-02-07','Oklahoma City','OKC','#007AC1',false,112,106),
-rkt('2026-02-10','LA Clippers','LAC','#C8102E',true,102,95),
-rkt('2026-02-11','LA Clippers','LAC','#C8102E',true,102,105),
-rkt('2026-02-19','Charlotte','CHA','#1D1160',false,105,101),
-rkt('2026-02-21','New York','NYK','#F58426',false,106,108),
-rkt('2026-02-23','Utah','UTA','#002B5C',true,125,105),
-rkt('2026-02-25','Sacramento','SAC','#5A2D81',true,128,97),
-rkt('2026-02-26','Orlando','ORL','#0077C0',false,113,108),
-rkt('2026-02-28','Miami','MIA','#98002E',false,105,115),
-rkt('2026-03-02','Washington','WAS','#002B5C',false,123,118),
-rkt('2026-03-05','Golden State','GSW','#1D428A',true,113,115),
-rkt('2026-03-06','Portland','POR','#E03A3E',true,106,99),
-rkt('2026-03-08','San Antonio','SAS','#061922',false,120,145),
-rkt('2026-03-10','Toronto','TOR','#CE1141',true,113,99),
-rkt('2026-03-11','Denver','DEN','#0E2240',false,93,129),
-rkt('2026-03-13','New Orleans','NOP','#0C2340',true,107,105),
-rkt('2026-03-16','LA Lakers','LAL','#552583',true,92,100),
-rkt('2026-03-18','LA Lakers','LAL','#552583',true,116,124),
-rkt('2026-03-20','Atlanta','ATL','#E03A3E',true,117,95),
-rkt('2026-03-21','Miami','MIA','#98002E',true,123,122),
-rkt('2026-03-23','Chicago','CHI','#CE1141',false,124,132),
-rkt('2026-03-25','Minnesota','MIN','#0C2340',false,108,110),
-rkt('2026-03-27','Memphis','MEM','#5D76A9',false,119,109),
-rkt('2026-03-29','New Orleans','NOP','#0C2340',false,134,102),
-rkt('2026-03-31','New York','NYK','#F58426',true,111,94),
-rkt('2026-04-01','Milwaukee','MIL','#00471B',true,119,113),
-rkt('2026-04-03','Utah','UTA','#002B5C',true,140,106),
-rkt('2026-04-05','Golden State','GSW','#1D428A',false,117,116),
-rktF('2026-04-07','Phoenix','PHX','#1D1160',false,'10:00 CST'),
-rktF('2026-04-09','Philadelphia','PHI','#006BB6',true,'7:00 CST'),
-rktF('2026-04-10','Minnesota','MIN','#0C2340',true,'8:30 CST'),
-rktF('2026-04-12','Memphis','MEM','#5D76A9',true,'7:30 CST'),
-// ── ASTROS 2026 ──────────────────────────────────────────────────────────────
-ast('2026-03-26','LA Angels','LAA','#BA0021',true,0,3),
-ast('2026-03-27','LA Angels','LAA','#BA0021',true,2,6),
-ast('2026-03-28','LA Angels','LAA','#BA0021',true,11,9),
-ast('2026-03-29','LA Angels','LAA','#BA0021',true,9,7),
-ast('2026-03-30','Boston','BOS','#BD3039',true,8,1),
-ast('2026-03-31','Boston','BOS','#BD3039',true,9,2),
-ast('2026-04-01','Boston','BOS','#BD3039',true,6,4),
-ast('2026-04-03','Athletics','ATH','#003263',false,4,11),
-ast('2026-04-04','Athletics','ATH','#003263',false,11,0),
-ast('2026-04-05','Athletics','ATH','#003263',false,10,12),
-astF('2026-04-06','Colorado','COL','#333366',false,'7:40 CST'),
-astF('2026-04-07','Colorado','COL','#333366',false,'7:40 CST'),
-astF('2026-04-08','Colorado','COL','#333366',false,'2:10 CST'),
-astF('2026-04-10','Seattle','SEA','#0C2C56',false,'8:40 CST'),
-astF('2026-04-11','Seattle','SEA','#0C2C56',false,'8:40 CST'),
-astF('2026-04-12','Seattle','SEA','#0C2C56',false,'3:10 CST'),
-astF('2026-04-13','Seattle','SEA','#0C2C56',false,'3:10 CST'),
-astF('2026-04-14','Colorado','COL','#333366',true,'7:10 CST'),
-astF('2026-04-15','Colorado','COL','#333366',true,'7:10 CST'),
-astF('2026-04-16','Colorado','COL','#333366',true,'7:10 CST'),
-astF('2026-04-17','St. Louis','STL','#C41E3A',true,'7:10 CST'),
-astF('2026-04-18','St. Louis','STL','#C41E3A',true,'6:10 CST'),
-astF('2026-04-19','St. Louis','STL','#C41E3A',true,'1:10 CST'),
-astF('2026-04-20','Cleveland','CLE','#00385D',false,'5:10 CST'),
-astF('2026-04-21','Cleveland','CLE','#00385D',false,'5:10 CST'),
-astF('2026-04-22','Cleveland','CLE','#00385D',false,'12:10 CST'),
-astF('2026-04-24','New York','NYY','#003087',true,'7:10 CST'),
-astF('2026-04-25','New York','NYY','#003087',true,'6:10 CST'),
-astF('2026-04-26','New York','NYY','#003087',true,'1:10 CST'),
-astF('2026-04-28','Baltimore','BAL','#DF4601',false,'5:35 CST'),
-astF('2026-04-29','Baltimore','BAL','#DF4601',false,'5:35 CST'),
-astF('2026-04-30','Baltimore','BAL','#DF4601',false,'11:35 CST'),
-astF('2026-05-01','Boston','BOS','#BD3039',false,'6:10 CST'),
-astF('2026-05-02','Boston','BOS','#BD3039',false,'3:10 CST'),
-astF('2026-05-03','Boston','BOS','#BD3039',false,'12:35 CST'),
-astF('2026-05-04','LA Angels','LAA','#BA0021',true,'7:10 CST'),
-astF('2026-05-05','LA Angels','LAA','#BA0021',true,'7:10 CST'),
-astF('2026-05-06','LA Angels','LAA','#BA0021',true,'1:10 CST'),
-astF('2026-05-08','Cincinnati','CIN','#C6011F',false,'5:40 CST'),
-astF('2026-05-09','Cincinnati','CIN','#C6011F',false,'3:10 CST'),
-astF('2026-05-10','Cincinnati','CIN','#C6011F',false,'12:40 CST'),
-astF('2026-05-11','Seattle','SEA','#0C2C56',true,'7:10 CST'),
-astF('2026-05-12','Seattle','SEA','#0C2C56',true,'7:10 CST'),
-astF('2026-05-13','Seattle','SEA','#0C2C56',true,'7:10 CST'),
-astF('2026-05-14','Seattle','SEA','#0C2C56',true,'1:10 CST'),
-astF('2026-05-15','Texas Rangers','TEX','#003278',true,'7:10 CST'),
-astF('2026-05-16','Texas Rangers','TEX','#003278',true,'6:10 CST'),
-astF('2026-05-17','Texas Rangers','TEX','#003278',true,'1:10 CST'),
-astF('2026-05-18','Minnesota','MIN','#002B5C',false,'6:40 CST'),
-astF('2026-05-19','Minnesota','MIN','#002B5C',false,'6:40 CST'),
-astF('2026-05-20','Minnesota','MIN','#002B5C',false,'12:40 CST'),
-astF('2026-05-22','Chicago','CWS','#27251F',false,'1:20 CST'),
-astF('2026-05-23','Chicago','CWS','#27251F',false,'1:20 CST'),
-astF('2026-05-24','Chicago','CWS','#27251F',false,'1:20 CST'),
-astF('2026-05-25','Texas Rangers','TEX','#003278',false,'6:05 CST'),
-astF('2026-05-26','Texas Rangers','TEX','#003278',false,'7:05 CST'),
-astF('2026-05-27','Texas Rangers','TEX','#003278',false,'7:05 CST'),
-astF('2026-05-28','Texas Rangers','TEX','#003278',false,'7:05 CST'),
-astF('2026-05-29','Milwaukee','MIL','#12284B',true,'7:10 CST'),
-astF('2026-05-30','Milwaukee','MIL','#12284B',true,'3:10 CST'),
-astF('2026-05-31','Milwaukee','MIL','#12284B',true,'1:10 CST'),
-astF('2026-06-02','Pittsburgh','PIT','#FDB827',true,'7:10 CST'),
-astF('2026-06-03','Pittsburgh','PIT','#FDB827',true,'7:10 CST'),
-astF('2026-06-04','Pittsburgh','PIT','#FDB827',true,'7:10 CST'),
-astF('2026-06-05','Athletics','ATH','#003263',true,'7:10 CST'),
-astF('2026-06-06','Athletics','ATH','#003263',true,'3:10 CST'),
-astF('2026-06-07','Athletics','ATH','#003263',true,'1:10 CST'),
-astF('2026-06-08','LA Angels','LAA','#BA0021',false,'8:38 CST'),
-astF('2026-06-09','LA Angels','LAA','#BA0021',false,'8:38 CST'),
-astF('2026-06-10','LA Angels','LAA','#BA0021',false,'8:38 CST'),
-astF('2026-06-12','Kansas City','KC','#004687',false,'7:10 CST'),
-astF('2026-06-13','Kansas City','KC','#004687',false,'6:15 CST'),
-astF('2026-06-14','Kansas City','KC','#004687',false,'1:10 CST'),
-astF('2026-06-15','Detroit','DET','#FA4616',true,'7:10 CST'),
-astF('2026-06-16','Detroit','DET','#FA4616',true,'7:10 CST'),
-astF('2026-06-17','Detroit','DET','#FA4616',true,'1:10 CST'),
-astF('2026-06-19','Cleveland','CLE','#00385D',true,'7:10 CST'),
-astF('2026-06-20','Cleveland','CLE','#00385D',true,'6:15 CST'),
-astF('2026-06-21','Cleveland','CLE','#00385D',true,'1:10 CST'),
-astF('2026-06-22','Toronto','TOR','#134A8E',false,'6:07 CST'),
-astF('2026-06-23','Toronto','TOR','#134A8E',false,'6:07 CST'),
-astF('2026-06-24','Toronto','TOR','#134A8E',false,'6:07 CST'),
-astF('2026-06-25','Detroit','DET','#FA4616',false,'5:40 CST'),
-astF('2026-06-26','Detroit','DET','#FA4616',false,'5:40 CST'),
-astF('2026-06-27','Detroit','DET','#FA4616',false,'12:10 CST'),
-astF('2026-06-28','Detroit','DET','#FA4616',false,'12:40 CST'),
-astF('2026-06-29','Minnesota','MIN','#002B5C',true,'7:10 CST'),
-astF('2026-06-30','Minnesota','MIN','#002B5C',true,'7:10 CST'),
-astF('2026-07-01','Minnesota','MIN','#002B5C',true,'7:10 CST'),
-astF('2026-07-03','Tampa Bay','TB','#092C5C',true,'7:10 CST'),
-astF('2026-07-04','Tampa Bay','TB','#092C5C',true,'6:10 CST'),
-astF('2026-07-05','Tampa Bay','TB','#092C5C',true,'2:30 CST'),
-astF('2026-07-06','Washington','WSH','#AB0003',false,'6:05 CST'),
-astF('2026-07-07','Washington','WSH','#AB0003',false,'5:45 CST'),
-astF('2026-07-08','Washington','WSH','#AB0003',false,'5:45 CST'),
-astF('2026-07-10','Texas Rangers','TEX','#003278',false,'7:05 CST'),
-astF('2026-07-11','Texas Rangers','TEX','#003278',false,'6:05 CST'),
-astF('2026-07-12','Texas Rangers','TEX','#003278',false,'1:35 CST'),
-astF('2026-07-17','Baltimore','BAL','#DF4601',true,'7:10 CST'),
-astF('2026-07-18','Baltimore','BAL','#DF4601',true,'3:10 CST'),
-astF('2026-07-19','Baltimore','BAL','#DF4601',true,'1:10 CST'),
-astF('2026-07-20','Miami','MIA','#00A3E0',true,'7:10 CST'),
-astF('2026-07-21','Miami','MIA','#00A3E0',true,'7:10 CST'),
-astF('2026-07-22','Miami','MIA','#00A3E0',true,'7:10 CST'),
-astF('2026-07-24','Chicago','CWS','#27251F',false,'6:40 CST'),
-astF('2026-07-25','Chicago','CWS','#27251F',false,'6:10 CST'),
-astF('2026-07-26','Chicago','CWS','#27251F',false,'1:10 CST'),
-astF('2026-07-27','LA Angels','LAA','#BA0021',false,'8:38 CST'),
-astF('2026-07-28','LA Angels','LAA','#BA0021',false,'8:38 CST'),
-astF('2026-07-29','LA Angels','LAA','#BA0021',false,'8:38 CST'),
-astF('2026-07-31','Texas Rangers','TEX','#003278',true,'7:10 CST'),
-astF('2026-08-01','Texas Rangers','TEX','#003278',true,'6:10 CST'),
-astF('2026-08-02','Texas Rangers','TEX','#003278',true,'1:10 CST'),
-astF('2026-08-03','Toronto','TOR','#134A8E',true,'7:10 CST'),
-astF('2026-08-04','Toronto','TOR','#134A8E',true,'7:10 CST'),
-astF('2026-08-05','Toronto','TOR','#134A8E',true,'1:10 CST'),
-astF('2026-08-07','San Diego','SD','#2F241D',false,'8:40 CST'),
-astF('2026-08-08','San Diego','SD','#2F241D',false,'6:15 CST'),
-astF('2026-08-09','San Diego','SD','#2F241D',false,'7:20 CST'),
-astF('2026-08-10','San Francisco','SF','#FD5A1E',false,'8:45 CST'),
-astF('2026-08-11','San Francisco','SF','#FD5A1E',false,'8:45 CST'),
-astF('2026-08-12','San Francisco','SF','#FD5A1E',false,'2:45 CST'),
-astF('2026-08-14','Seattle','SEA','#0C2C56',true,'7:10 CST'),
-astF('2026-08-15','Seattle','SEA','#0C2C56',true,'6:10 CST'),
-astF('2026-08-16','Seattle','SEA','#0C2C56',true,'6:20 CST'),
-astF('2026-08-18','LA Angels','LAA','#BA0021',true,'7:10 CST'),
-astF('2026-08-19','LA Angels','LAA','#BA0021',true,'7:10 CST'),
-astF('2026-08-20','LA Angels','LAA','#BA0021',true,'7:10 CST'),
-astF('2026-08-21','Athletics','ATH','#003263',true,'7:10 CST'),
-astF('2026-08-22','Athletics','ATH','#003263',true,'6:10 CST'),
-astF('2026-08-23','Athletics','ATH','#003263',true,'1:10 CST'),
-astF('2026-08-25','New York','NYY','#003087',false,'6:05 CST'),
-astF('2026-08-26','New York','NYY','#003087',false,'6:05 CST'),
-astF('2026-08-27','New York','NYY','#003087',false,'6:05 CST'),
-astF('2026-08-28','New York','NYY','#003087',false,'6:10 CST'),
-astF('2026-08-29','New York','NYY','#003087',false,'3:10 CST'),
-astF('2026-08-30','New York','NYY','#003087',false,'6:20 CST'),
-astF('2026-08-31','Chicago','CWS','#27251F',true,'7:10 CST'),
-astF('2026-09-01','Chicago','CWS','#27251F',true,'7:10 CST'),
-astF('2026-09-02','Chicago','CWS','#27251F',true,'7:10 CST'),
-astF('2026-09-03','Chicago','CWS','#27251F',true,'1:10 CST'),
-astF('2026-09-04','Arizona','ARI','#A71930',true,'7:10 CST'),
-astF('2026-09-05','Arizona','ARI','#A71930',true,'6:15 CST'),
-astF('2026-09-06','Arizona','ARI','#A71930',true,'1:10 CST'),
-astF('2026-09-08','Philadelphia','PHI','#E81828',false,'5:40 CST'),
-astF('2026-09-09','Philadelphia','PHI','#E81828',false,'5:40 CST'),
-astF('2026-09-10','Philadelphia','PHI','#E81828',false,'12:05 CST'),
-astF('2026-09-11','Tampa Bay','TB','#092C5C',false,'6:10 CST'),
-astF('2026-09-12','Tampa Bay','TB','#092C5C',false,'5:10 CST'),
-astF('2026-09-13','Tampa Bay','TB','#092C5C',false,'12:40 CST'),
-astF('2026-09-15','Kansas City','KC','#004687',true,'7:10 CST'),
-astF('2026-09-16','Kansas City','KC','#004687',true,'7:10 CST'),
-astF('2026-09-17','Kansas City','KC','#004687',true,'6:15 CST'),
-astF('2026-09-18','Atlanta','ATL','#CE1141',true,'7:10 CST'),
-astF('2026-09-19','Atlanta','ATL','#CE1141',true,'6:10 CST'),
-astF('2026-09-20','Atlanta','ATL','#CE1141',true,'1:10 CST'),
-astF('2026-09-22','Seattle','SEA','#0C2C56',false,'8:40 CST'),
-astF('2026-09-23','Seattle','SEA','#0C2C56',false,'9:10 CST'),
-astF('2026-09-24','Athletics','ATH','#003263',false,'8:40 CST'),
-astF('2026-09-25','Athletics','ATH','#003263',false,'8:40 CST'),
-astF('2026-09-26','Athletics','ATH','#003263',false,'8:40 CST'),
-astF('2026-09-27','Athletics','ATH','#003263',false,'2:05 CST'),
-// ── ARSENAL 2025-26 ──────────────────────────────────────────────────────────
-ars('2025-08-17','Man United','MUN',false,1,0,'EPL'),
-ars('2025-08-23','Leeds United','LEE',true,5,0,'EPL'),
-ars('2025-08-31','Liverpool','LIV',false,0,1,'EPL'),
-ars('2025-09-13','Nottm Forest','NFO',true,3,0,'EPL'),
-ars('2025-09-16','Athletic Club','ACB',false,2,0,'UCL'),
-ars('2025-09-21','Man City','MCI',true,1,1,'EPL'),
-ars('2025-09-24','Port Vale','PVA',false,2,0,'CC'),
-ars('2025-09-28','Newcastle','NEW',false,2,1,'EPL'),
-ars('2025-10-01','Olympiacos','OLY',true,2,0,'UCL'),
-ars('2025-10-04','West Ham','WHU',true,2,0,'EPL'),
-ars('2025-10-18','Fulham','FUL',false,1,0,'EPL'),
-ars('2025-10-21','Atletico Madrid','ATM',true,4,0,'UCL'),
-ars('2025-10-26','Crystal Palace','CRY',true,1,0,'EPL'),
-ars('2025-10-29','Brighton','BRI',true,2,0,'CC'),
-ars('2025-11-01','Burnley','BUR',false,2,0,'EPL'),
-ars('2025-11-04','Slavia Prague','SLA',false,3,0,'UCL'),
-ars('2025-11-08','Sunderland','SUN',false,2,2,'EPL'),
-ars('2025-11-23','Tottenham','TOT',true,4,1,'EPL'),
-ars('2025-11-26','Bayern Munich','BAY',true,3,1,'UCL'),
-ars('2025-11-30','Chelsea','CHE',false,1,1,'EPL'),
-ars('2025-12-03','Brentford','BRE',true,2,0,'EPL'),
-ars('2025-12-06','Aston Villa','AVL',false,1,2,'EPL'),
-ars('2025-12-10','Club Brugge','BRU',false,3,0,'UCL'),
-ars('2025-12-13','Wolverhampton','WOL',true,2,1,'EPL'),
-ars('2025-12-20','Everton','EVE',false,1,0,'EPL'),
-ars('2025-12-23','Crystal Palace','CRY',true,1,1,'CC','W'),
-ars('2025-12-27','Brighton','BRI',true,2,1,'EPL'),
-ars('2025-12-30','Aston Villa','AVL',true,4,1,'EPL'),
-ars('2026-01-03','Bournemouth','BOU',false,3,2,'EPL'),
-ars('2026-01-08','Liverpool','LIV',true,0,0,'EPL'),
-ars('2026-01-11','Portsmouth','POR',false,4,1,'FAC'),
-ars('2026-01-14','Chelsea','CHE',false,3,2,'CC'),
-ars('2026-01-17','Nottm Forest','NFO',false,0,0,'EPL'),
-ars('2026-01-20','Internazionale','INT',false,3,1,'UCL'),
-ars('2026-01-25','Man United','MUN',true,2,3,'EPL'),
-ars('2026-01-28','Kairat Almaty','KAI',true,3,2,'UCL'),
-ars('2026-01-31','Leeds United','LEE',false,4,0,'EPL'),
-ars('2026-02-03','Chelsea','CHE',true,1,0,'CC'),
-ars('2026-02-07','Sunderland','SUN',true,3,0,'EPL'),
-ars('2026-02-12','Brentford','BRE',false,1,1,'EPL'),
-ars('2026-02-15','Wigan Athletic','WIG',true,4,0,'FAC'),
-ars('2026-02-18','Wolverhampton','WOL',false,2,2,'EPL'),
-ars('2026-02-22','Tottenham','TOT',false,4,1,'EPL'),
-ars('2026-03-01','Chelsea','CHE',true,2,1,'EPL'),
-ars('2026-03-04','Brighton','BRI',false,1,0,'EPL'),
-ars('2026-03-07','Mansfield Town','MAN',false,2,1,'FAC'),
-ars('2026-03-11','Bayer Leverkusen','LEV',false,1,1,'UCL'),
-ars('2026-03-14','Everton','EVE',true,2,0,'EPL'),
-ars('2026-03-17','Bayer Leverkusen','LEV',true,2,0,'UCL'),
-ars('2026-03-22','Man City','MCI',true,0,2,'CC'),
-ars('2026-04-04','Southampton','SOU',false,1,2,'FAC'),
-arsF('2026-04-07','Sporting CP','SCP',false,'2:00 CST','UCL'),
-arsF('2026-04-11','Bournemouth','BOU',true,'6:30 CST','EPL'),
-arsF('2026-04-15','Sporting CP','SCP',true,'2:00 CST','UCL'),
-arsF('2026-04-19','Man City','MCI',false,'10:30 CST','EPL'),
-arsF('2026-04-25','Newcastle','NEW',true,'11:30 CST','EPL'),
-arsF('2026-05-02','Fulham','FUL',true,'11:30 CST','EPL'),
-arsF('2026-05-10','West Ham','WHU',false,'10:30 CST','EPL'),
-arsF('2026-05-17','Burnley','BUR',true,'9:00 CST','EPL'),
-arsF('2026-05-24','Crystal Palace','CRY',false,'10:00 CST','EPL'),
-arsF('2026-08-05','Real Betis','BET',true,'1:30 CST','Friendly'),
-// ── UT BASEBALL ──────────────────────────────────────────────────────────────
-// ── UT BASEBALL 2026 FULL SCHEDULE ───────────────────────────────────────────
-// helper: ubb = past result, ubbF = future game
-// hm=true home, hm=false away, hm='N' neutral
-{dt:'2026-02-13',t:'UT Baseball',op:'UC Davis',ab:'UCD',orc:'',oc:'#002855',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[12,2],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-14',t:'UT Baseball',op:'UC Davis',ab:'UCD',orc:'',oc:'#002855',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[6,4],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-15',t:'UT Baseball',op:'UC Davis',ab:'UCD',orc:'',oc:'#002855',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[9,1],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-17',t:'UT Baseball',op:'Lamar',ab:'LAM',orc:'',oc:'#BF0000',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[14,4],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-20',t:'UT Baseball',op:'Michigan State',ab:'MSU',orc:'',oc:'#18453B',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[8,1],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-21',t:'UT Baseball',op:'Michigan State',ab:'MSU',orc:'',oc:'#18453B',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[3,1],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-22',t:'UT Baseball',op:'Michigan State',ab:'MSU',orc:'',oc:'#18453B',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[4,0],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-24',t:'UT Baseball',op:'UTRGV',ab:'UTRGV',orc:'',oc:'#003366',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[14,0],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-27',t:'UT Baseball',op:'Coastal Carolina',ab:'CCU',orc:'',oc:'#006F51',hm:false,lc:'Daikin Park, Houston TX',sc:[8,1],r:'W',lg:'NCAA BB'},
-{dt:'2026-02-28',t:'UT Baseball',op:'Baylor',ab:'BAY',orc:'',oc:'#154734',hm:false,lc:'Daikin Park, Houston TX',sc:[5,2],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-01',t:'UT Baseball',op:'Ohio State',ab:'OSU',orc:'',oc:'#BB0000',hm:false,lc:'Daikin Park, Houston TX',sc:[10,3],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-03',t:'UT Baseball',op:'Houston Christian',ab:'HCU',orc:'',oc:'#5B2333',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[16,3],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-06',t:'UT Baseball',op:'USC Upstate',ab:'USCU',orc:'',oc:'#006341',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[14,2],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-07',t:'UT Baseball',op:'USC Upstate',ab:'USCU',orc:'',oc:'#006341',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[11,9],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-08',t:'UT Baseball',op:'USC Upstate',ab:'USCU',orc:'',oc:'#006341',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[13,3],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-10',t:'UT Baseball',op:'Texas State',ab:'TXST',orc:'',oc:'#4B1B6A',hm:false,lc:'San Marcos, Texas',sc:[15,4],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-13',t:'UT Baseball',op:'Ole Miss',ab:'MISS',orc:'',oc:'#14213D',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[8,9],r:'L',lg:'NCAA BB'},
-{dt:'2026-03-14',t:'UT Baseball',op:'Ole Miss',ab:'MISS',orc:'',oc:'#14213D',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[11,2],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-15',t:'UT Baseball',op:'Ole Miss',ab:'MISS',orc:'',oc:'#14213D',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[8,2],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-17',t:'UT Baseball',op:'Tarleton State',ab:'TAR',orc:'',oc:'#4B1B6A',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[1,6],r:'L',lg:'NCAA BB'},
-{dt:'2026-03-20',t:'UT Baseball',op:'Auburn',ab:'AUB',orc:'',oc:'#0C2340',hm:false,lc:'Auburn, Alabama',sc:[3,4],r:'L',lg:'NCAA BB'},
-{dt:'2026-03-21',t:'UT Baseball',op:'Auburn',ab:'AUB',orc:'',oc:'#0C2340',hm:false,lc:'Auburn, Alabama',sc:[7,6],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-22',t:'UT Baseball',op:'Auburn',ab:'AUB',orc:'',oc:'#0C2340',hm:false,lc:'Auburn, Alabama',sc:[5,0],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-24',t:'UT Baseball',op:'Houston',ab:'HOU',orc:'',oc:'#C8102E',hm:false,lc:'Houston, Texas',sc:[7,9],r:'L',lg:'NCAA BB'},
-{dt:'2026-03-26',t:'UT Baseball',op:'Oklahoma',ab:'OU',orc:'',oc:'#841617',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[14,0],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-27',t:'UT Baseball',op:'Oklahoma',ab:'OU',orc:'',oc:'#841617',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[4,3],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-28',t:'UT Baseball',op:'Oklahoma',ab:'OU',orc:'',oc:'#841617',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[5,4],r:'W',lg:'NCAA BB'},
-{dt:'2026-03-31',t:'UT Baseball',op:'Texas State',ab:'TXST',orc:'',oc:'#4B1B6A',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',sc:[10,8],r:'W',lg:'NCAA BB'},
-{dt:'2026-04-02',t:'UT Baseball',op:'South Carolina',ab:'SC',orc:'',oc:'#73000A',hm:false,lc:'Founders Park, Columbia SC',sc:[1,9],r:'L',lg:'NCAA BB'},
-{dt:'2026-04-03',t:'UT Baseball',op:'South Carolina',ab:'SC',orc:'',oc:'#73000A',hm:false,lc:'Founders Park, Columbia SC',sc:[5,3],r:'W',lg:'NCAA BB'},
-{dt:'2026-04-04',t:'UT Baseball',op:'South Carolina',ab:'SC',orc:'',oc:'#73000A',hm:false,lc:'Founders Park, Columbia SC',sc:[4,1],r:'W',lg:'NCAA BB'},
-{dt:'2026-04-07',t:'UT Baseball',op:'Incarnate Word',ab:'UIW',orc:'',oc:'#B20000',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-04-10',t:'UT Baseball',op:'Texas A&M',ab:'ATM',orc:'',oc:'#500000',hm:false,lc:'Blue Bell Park, College Station TX',tm:'7:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-11',t:'UT Baseball',op:'Texas A&M',ab:'ATM',orc:'',oc:'#500000',hm:false,lc:'Blue Bell Park, College Station TX',tm:'2:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-12',t:'UT Baseball',op:'Texas A&M',ab:'ATM',orc:'',oc:'#500000',hm:false,lc:'Blue Bell Park, College Station TX',tm:'1:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-14',t:'UT Baseball',op:'A&M Corpus Christi',ab:'TAMC',orc:'',oc:'#007B5F',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-04-17',t:'UT Baseball',op:'Alabama',ab:'ALA',orc:'',oc:'#9E1B32',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-04-18',t:'UT Baseball',op:'Alabama',ab:'ALA',orc:'',oc:'#9E1B32',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'2:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-19',t:'UT Baseball',op:'Alabama',ab:'ALA',orc:'',oc:'#9E1B32',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'1:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-21',t:'UT Baseball',op:'Air Force',ab:'AF',orc:'',oc:'#003087',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-04-24',t:'UT Baseball',op:'Vanderbilt',ab:'VAN',orc:'',oc:'#866D4B',hm:false,lc:'Hawkins Field, Nashville TN',tm:'6:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-25',t:'UT Baseball',op:'Vanderbilt',ab:'VAN',orc:'',oc:'#866D4B',hm:false,lc:'Hawkins Field, Nashville TN',tm:'7:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-26',t:'UT Baseball',op:'Vanderbilt',ab:'VAN',orc:'',oc:'#866D4B',hm:false,lc:'Hawkins Field, Nashville TN',tm:'12:00 CST',lg:'NCAA BB'},
-{dt:'2026-04-28',t:'UT Baseball',op:'Sam Houston',ab:'SHSU',orc:'',oc:'#F46F20',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-05-01',t:'UT Baseball',op:'Mississippi State',ab:'MSST',orc:'',oc:'#5D1725',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-05-02',t:'UT Baseball',op:'Mississippi State',ab:'MSST',orc:'',oc:'#5D1725',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'2:30 CST',lg:'NCAA BB'},
-{dt:'2026-05-03',t:'UT Baseball',op:'Mississippi State',ab:'MSST',orc:'',oc:'#5D1725',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'1:00 CST',lg:'NCAA BB'},
-{dt:'2026-05-05',t:'UT Baseball',op:'UTSA',ab:'UTSA',orc:'',oc:'#002A5C',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-05-08',t:'UT Baseball',op:'Tennessee',ab:'TENN',orc:'',oc:'#FF8200',hm:false,lc:'Lindsey Nelson Stadium, Knoxville TN',tm:'5:30 CST',lg:'NCAA BB'},
-{dt:'2026-05-09',t:'UT Baseball',op:'Tennessee',ab:'TENN',orc:'',oc:'#FF8200',hm:false,lc:'Lindsey Nelson Stadium, Knoxville TN',tm:'5:00 CST',lg:'NCAA BB'},
-{dt:'2026-05-10',t:'UT Baseball',op:'Tennessee',ab:'TENN',orc:'',oc:'#FF8200',hm:false,lc:'Lindsey Nelson Stadium, Knoxville TN',tm:'11:00 CST',lg:'NCAA BB'},
-{dt:'2026-05-14',t:'UT Baseball',op:'Missouri',ab:'MIZ',orc:'',oc:'#F1B82D',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-05-15',t:'UT Baseball',op:'Missouri',ab:'MIZ',orc:'',oc:'#F1B82D',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'6:30 CST',lg:'NCAA BB'},
-{dt:'2026-05-16',t:'UT Baseball',op:'Missouri',ab:'MIZ',orc:'',oc:'#F1B82D',hm:true,lc:'UFCU Disch-Falk Field, Austin TX',tm:'2:00 CST',lg:'NCAA BB'},
-// ── UT FOOTBALL 2026 ─────────────────────────────────────────────────────────
-{dt:'2026-09-05',t:'UT Football',op:'Texas State',ab:'TXST',orc:'',oc:'#4B1B6A',hm:true,lc:'DKR Stadium, Austin TX',tm:'7:00 CST',lg:'NCAA FB',star:true},
-{dt:'2026-09-12',t:'UT Football',op:'Ohio State',ab:'OSU',orc:'',oc:'#BB0000',hm:true,lc:'DKR Stadium, Austin TX',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-09-19',t:'UT Football',op:'UTSA',ab:'UTSA',orc:'',oc:'#002A5C',hm:true,lc:'DKR Stadium, Austin TX',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-09-26',t:'UT Football',op:'Tennessee',ab:'TENN',orc:'',oc:'#FF8200',hm:false,lc:'Neyland Stadium, Knoxville TN',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-10-10',t:'UT Football',op:'Oklahoma',ab:'OU',orc:'',oc:'#841617',hm:false,lc:'Cotton Bowl, Dallas TX',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-10-17',t:'UT Football',op:'Florida',ab:'UF',orc:'',oc:'#0021A5',hm:true,lc:'DKR Stadium, Austin TX',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-10-24',t:'UT Football',op:'Ole Miss',ab:'MISS',orc:'',oc:'#14213D',hm:true,lc:'DKR Stadium, Austin TX',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-10-31',t:'UT Football',op:'Mississippi St',ab:'MSST',orc:'',oc:'#5D1725',hm:true,lc:'DKR Stadium, Austin TX',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-11-07',t:'UT Football',op:'Missouri',ab:'MIZ',orc:'',oc:'#F1B82D',hm:false,lc:'Memorial Stadium, Columbia MO',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-11-14',t:'UT Football',op:'LSU',ab:'LSU',orc:'',oc:'#461D7C',hm:false,lc:'Tiger Stadium, Baton Rouge LA',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-11-21',t:'UT Football',op:'Arkansas',ab:'ARK',orc:'',oc:'#9D2235',hm:true,lc:'DKR Stadium, Austin TX',tm:'TBD',lg:'NCAA FB'},
-{dt:'2026-11-27',t:'UT Football',op:'Texas A&M',ab:'ATM',orc:'',oc:'#500000',hm:false,lc:'Kyle Field, College Station TX',tm:'TBD',lg:'NCAA FB'},
-];
-
-function glabel(ev,recs){
-  var isUT=ev.t==='UT Baseball'||ev.t==='UT Football';
-  var my=isUT?'Texas':ev.t==='Arsenal'?'ARS':'HOU';
-  var rec=TREC[ev.t];
-  var myS=rec?my+' ('+rec+')':my;
-  var liveRec=getLiveRec(ev,recs);
-  var orc=liveRec||(ev.orc||'');
-  var oppS=orc?ev.ab+' ('+orc+')':ev.ab;
-  return myS+' '+(ev.hm?'vs':'@')+' '+oppS+(ev.star?' ⭐':'');
-}
-function gline2(ev){
-  if(ev.r){
-    var rc=ev.r==='W'?'#5fe085':ev.r==='D'?'#fbbf24':'#f87171';
-    return ev.lg+' · <span style="color:'+rc+';font-weight:700;">'+ev.r+'</span> '+ev.sc[0]+'–'+ev.sc[1];
-  }
-  return (ev.tm||'TBD')+' · '+(ev.lc?ev.lc.split(',')[0]:'');
-}
-
-function calcStreak(all,id){
-  var td=tod(),d=new Date(td+'T12:00:00'),s=0;
-  if(!all[td]||!all[td][id]) d.setDate(d.getDate()-1);
-  for(var i=0;i<365;i++){
-    var k=d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
-    if(all[k]&&all[k][id]){s++;d.setDate(d.getDate()-1);}else break;
-  }
-  return s;
-}
 
 
 
@@ -1973,8 +1554,8 @@ function App(){
       var scoreMap={};
       var today=new Date();
       var fetches=[];
-      // Check last 5 days
-      for(var i=0;i<=5;i++){
+      // Check last 8 days
+      for(var i=0;i<=8;i++){
         var d=new Date(today);d.setDate(today.getDate()-i);
         var ds=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
         SCORE_FEEDS.forEach(function(f){
@@ -1995,12 +1576,21 @@ function App(){
                   var myScore=parseInt(myT.score||0),oppScore=parseInt(oppT.score||0);
                   var result=myScore>oppScore?'W':myScore<oppScore?'L':'D';
                   var entry={r:result,sc:[myScore,oppScore]};
-                  // Store under sport+date. ESPN uses UTC — also store under CDT (UTC-5/6)
+                  var oppAbbr=oppT.team&&oppT.team.abbreviation||'';
+                  // Store under sport+date AND sport+date+oppAbbr for precise matching
+                  // ESPN UTC — also store CDT (UTC-5)
                   var utcDate=ev.date?ev.date.slice(0,10):'';
-                  if(utcDate) scoreMap[f.lg+'_'+utcDate]=entry;
                   var cdtD=new Date(new Date(ev.date).getTime()-5*3600000);
                   var cdtDate=cdtD.getFullYear()+'-'+String(cdtD.getMonth()+1).padStart(2,'0')+'-'+String(cdtD.getDate()).padStart(2,'0');
-                  scoreMap[f.lg+'_'+cdtDate]=entry;
+                  // Store by opp abbr (precise) and by date alone (fallback)
+                  if(utcDate){
+                    scoreMap[f.lg+'_'+utcDate+'_'+oppAbbr]=entry;
+                    scoreMap[f.lg+'_'+utcDate]=entry; // fallback overwrite ok
+                  }
+                  if(cdtDate){
+                    scoreMap[f.lg+'_'+cdtDate+'_'+oppAbbr]=entry;
+                    scoreMap[f.lg+'_'+cdtDate]=entry;
+                  }
                 });
               })
               .catch(function(){})
@@ -2623,17 +2213,17 @@ function CalV(p){
   var all=p.all,evts=p.evts||[],addEvt=p.addEvt,dlEvt=p.dlEvt,liveRecs=p.liveRecs||{},liveScores=p.liveScores||{},now=new Date();
   // Helper: get live score for an SP event (overrides hardcoded result if available)
   function getScore(ev){
-    if(ev.r) return ev; // already has hardcoded result, use it
-    // Match by sport+date — try both the game date and day before/after for UTC offset
-    var lg=ev.lg;
-    var ls=liveScores[lg+'_'+ev.dt];
-    if(!ls){
-      // Try adjacent dates for timezone edge cases
-      var d=new Date(ev.dt+'T12:00:00');
-      var prev=new Date(d);prev.setDate(d.getDate()-1);
-      var next=new Date(d);next.setDate(d.getDate()+1);
-      var fmt=function(dd){return dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');};
-      ls=liveScores[lg+'_'+fmt(prev)]||liveScores[lg+'_'+fmt(next)];
+    if(ev.r&&ev.sc&&ev.sc.length===2) return ev; // already has full hardcoded result
+    var lg=ev.lg,ab=ev.ab||'';
+    var d=new Date(ev.dt+'T12:00:00');
+    var fmt=function(dd){return dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');};
+    var prev=fmt(new Date(d.getTime()-86400000));
+    var next=fmt(new Date(d.getTime()+86400000));
+    var dates=[ev.dt,prev,next];
+    var ls=null;
+    // Try precise match (date + opp abbr) first, then date-only fallback
+    for(var di=0;di<dates.length&&!ls;di++){
+      ls=liveScores[lg+'_'+dates[di]+'_'+ab]||liveScores[lg+'_'+dates[di]];
     }
     if(ls) return Object.assign({},ev,{r:ls.r,sc:ls.sc});
     return ev;
@@ -3086,8 +2676,10 @@ function WktV(p){
       parseMsg&&cr('div',{style:{fontSize:12,marginBottom:8,color:parseMsg.startsWith('✓')?'#4ade80':'#f87171',fontWeight:600}},parseMsg),
       cr('button',{
         onClick:function(){
-          if(!pasteText.trim()){sParseMsg('Paste your workout first.');return;}
-          sParsing(true);sParseMsg('⏳ Parsing with AI...');
+          sParseMsg('⚠️ AI parsing disabled on GitHub Pages. Paste your workout in chat with Claude instead — will be seeded directly.');
+          return;
+          // Disabled: API calls require auth key not exposed in public HTML
+          sParsing(true);
           fetch('https://api.anthropic.com/v1/messages',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
@@ -3841,54 +3433,6 @@ function StandingsV(){
   }
 
   // ── MLB STAT LEADERS ────────────────────────────────────────────────────────
-  function MLBLeaders(){
-    var d=data.mlb_hit;
-    if(!d) return cr('div',{style:{color:'#555',padding:'2rem',textAlign:'center'}},'Loading MLB stat leaders...');
-    if(d._error) return cr('div',{style:{color:'#f87171',padding:'1rem',fontSize:12}},'MLB stat leaders failed to load.');
-
-    // ESPN leaders endpoint returns categories
-    var cats=d.leaders||[];
-    var statOrder=['AVG','OBP','SLG','OPS','HR','RBI','SO','ERA'];
-    var statLabels={AVG:'Batting Avg',OBP:'On-Base %',SLG:'Slugging',OPS:'OPS',HR:'Home Runs',RBI:'RBI',SO:'Strikeouts (P)',ERA:'ERA (Starters)'};
-
-    function LeaderCard(cat){
-      var label=statLabels[cat.abbreviation]||cat.displayName||cat.abbreviation;
-      var leaders=(cat.leaders||[]).slice(0,5);
-      if(!leaders.length) return null;
-      return cr('div',{style:{background:T.ca,borderRadius:10,padding:'0.875rem 1rem',border:'1px solid '+T.bo}},
-        cr('div',{style:{fontSize:11,fontWeight:700,color:T.or,letterSpacing:'0.06em',marginBottom:8,textTransform:'uppercase'}},label),
-        cr('div',{style:{display:'flex',flexDirection:'column',gap:4}},
-          leaders.map(function(l,i){
-            var athlete=l.athlete||{};
-            var teamAbbr=athlete.team&&athlete.team.abbreviation||'';
-            var logo=athlete.team&&athlete.team.id?'https://a.espncdn.com/i/teamlogos/mlb/500/'+teamAbbr.toLowerCase()+'.png':'';
-            return cr('div',{key:i,style:{display:'flex',alignItems:'center',gap:8}},
-              cr('span',{style:{fontSize:11,color:'#555',minWidth:16,textAlign:'right'}},i+1),
-              logo&&cr('img',{src:logo,style:{width:14,height:14,objectFit:'contain'},onError:function(e){e.target.style.display='none';}}),
-              cr('span',{style:{fontSize:12,flex:1,color:T.tx}},athlete.displayName||athlete.shortName||'—'),
-              cr('span',{style:{fontSize:12,fontWeight:700,color:T.or}},l.displayValue||'—')
-            );
-          })
-        )
-      );
-    }
-
-    var displayed=cats.filter(function(c){
-      var a=c.abbreviation||'';
-      return ['AVG','OBP','SLG','OPS','HR','RBI','SO','ERA'].indexOf(a)>-1||
-             (c.displayName||'').match(/average|base|slug|ops|home run|rbi|strikeout|era/i);
-    });
-
-    if(!displayed.length){
-      // Fallback: show all available categories
-      displayed=cats.slice(0,8);
-    }
-
-    return cr('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:10}},
-      displayed.map(function(cat,i){return LeaderCard(cat);})
-    );
-  }
-
   var STAND_TABS=[
     {id:'mlb',l:'MLB'},
     {id:'nba',l:'NBA'},
